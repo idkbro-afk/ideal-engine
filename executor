@@ -1,0 +1,5027 @@
+local Version = [[0.1.43 Alpha
+- Adjust Notify Topbar Transparency set to 0.25 for easier to see text.
+- Adjust "time" in Notify Topbar line size frame offset set to 2.
+- Adjust Notify Topbar Position set scale to 0.033 for balance.
+- Set Enum of Executor ScreeGui to None.
+- Adjust Position of open/close that called "connect" set to offset 15 and scale 0.015.]]
+-- This executor
+
+--[[
+ HELLO SCRIPTBLOX AND HAXHELL USERSSSS WHAT THE ACTUALLY HELL YOU GUYS
+ DOING IN THIS RAW SCRIPT? AND YES IT'S MIGHT LOOK TOO AI SLOP BUT -
+ GUIS ARE NOT MADE BY AI, ANYWAY I'M STILL LEARNING SCRIPT!
+
+ THANK YOU FOR READINGGGGG
+ - from Loader.lua message
+]]
+
+getgenv().ES = nil
+
+-- Load SetUp
+loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/loadstring/ExperienceSettings-SetUp.lua"))()
+
+repeat task.wait() until getgenv().__ES_READY or getgenv().__ES_BANNED
+
+if getgenv().__ES_BANNED then
+	warn("You're banned from ExperienceSettings Executor.")
+	return
+end
+
+
+local ES = getgenv().ES
+
+-- RESET
+ES.progress = 0
+ES.max = 100
+ES.error = false
+ES.done = false
+ES.lastError = nil
+
+local function catch(err)
+	ES.error = true
+	ES.lastError = tostring(err)
+	warn("[ ES ERROR ]:", err)
+end
+
+local function safe(f)
+	local ok, err = pcall(f)
+	if not ok then
+		catch(err)
+	end
+end
+
+safe(function()
+	local url = "https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/Executor/ExperienceSettings%20Executor.lua"
+
+	local ok, src = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if not ok then
+		return catch("HttpGet failed: "..tostring(src))
+	end
+
+	local f, err = loadstring(src)
+	if not f then
+		return catch("Compile error: "..err)
+	end
+
+	ES.progress = 100
+end)
+
+if not ES.error then
+	ES.done = true
+end
+
+------------------------------------------------------------------------------------------
+
+-- =====>> Saved Functions <<=====
+-- ====FUNCTION CORNER=====
+local function Corner(Scale, Offset, Parent)
+  local Corner = Instance.new("UICorner")
+  Corner.CornerRadius = UDim.new(Scale or 0, Offset or 0)
+  Corner.Parent = Parent
+  return Corner
+end
+-- =====END FUNCTION CORNER====
+
+-- =====FUNCTION UILISTLAYOUT=====
+local HCenter = Enum.HorizontalAlignment.Center
+local VCenter = Enum.VerticalAlignment.Center
+local HLeft = Enum.HorizontalAlignment.Left
+local VTop = Enum.VerticalAlignment.Top
+local HRight = Enum.HorizontalAlignment.Right
+local VBottom = Enum.VerticalAlignment.Bottom
+local FillH = Enum.FillDirection.Horizontal
+local FillV = Enum.FillDirection.Vertical
+-- local SCustom = Enum.SortOrder.Custom
+local SLayout = Enum.SortOrder.LayoutOrder
+local SName = Enum.SortOrder.Name
+
+local function ListLayout(parent, scale, offset, HZ, VT, SO, FILL)
+    local list = Instance.new("UIListLayout")
+    list.Padding = UDim.new(scale or 0, offset or 0)
+    list.FillDirection = FILL or FillH
+    list.HorizontalAlignment = HZ or HCenter
+    list.VerticalAlignment = VT or VCenter
+    list.SortOrder = SO or SName
+    list.Parent = parent
+    return list
+end
+-- =====END FUNCTION UILISTLAYOUT=====
+
+-- ====FUNCTION UISTROKE=====
+local ASMBorder = Enum.ApplyStrokeMode.Border
+-- local ASMContextual = Enum.ApplyStrokeMode.Contextual
+
+local LJMBevel = Enum.LineJoinMode.Bevel
+-- local LJMMiter = Enum.LineJoinMode.Miter
+local LJMRound = Enum.LineJoinMode.Round
+
+local function Stroke(parent, ASM, R, G, B, LJM, Tn, Transy)
+    local stroke = parent:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+    stroke.ApplyStrokeMode = ASM or ASMBorder
+    stroke.Color = Color3.fromRGB(R or 255, G or 255, B or 255)
+    stroke.LineJoinMode = LJM or LJMRound
+    stroke.Thickness = Tn or 1
+    stroke.Transparency = Transy or 0
+    stroke.Parent = parent
+    return stroke
+end
+-- =====END FUNCTION UISTROKE=====
+
+-- ====FUNCTION UIGRADIENT=====
+local function Gradient(parent, rotation, offsetX, offsetY, ...)
+    local grad = parent:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+    grad.Rotation = rotation or 0
+    grad.Offset = Vector2.new(offsetX or 0, offsetY or 0)
+
+    local colors = {...}
+    local keypoints = {}
+
+    if #colors == 0 then
+        keypoints = { ColorSequenceKeypoint.new(0, Color3.new(1,1,1)), ColorSequenceKeypoint.new(1, Color3.new(1,1,1)) }
+    elseif #colors == 1 then
+        keypoints = { ColorSequenceKeypoint.new(0, colors[1]), ColorSequenceKeypoint.new(1, colors[1]) }
+    else
+        for i, c in ipairs(colors) do
+            local t = (i-1) / (#colors-1)
+            table.insert(keypoints, ColorSequenceKeypoint.new(t, c))
+        end
+    end
+
+    grad.Color = ColorSequence.new(keypoints)
+    grad.Parent = parent
+    return grad
+end
+-- =====END FUNCTION UIGRADIENT=====
+
+-- ====FUNCTION UIPADDING (ตามลำดับ Roblox)=====
+local function Padding(parent, bottom, left, right, top)
+    local pad = parent:FindFirstChildOfClass("UIPadding") or Instance.new("UIPadding")
+    local function toUDim(value)
+        if typeof(value) == "UDim" then
+            return value
+        elseif type(value) == "number" then
+            return UDim.new(0, value)
+        elseif type(value) == "table" and #value >= 2 then
+            return UDim.new(value[1] or 0, value[2] or 0)
+        else
+            return UDim.new(0, 0)
+        end
+    end
+
+    pad.PaddingBottom = toUDim(bottom)
+    pad.PaddingLeft   = toUDim(left)
+    pad.PaddingRight  = toUDim(right)
+    pad.PaddingTop    = toUDim(top)
+
+    pad.Parent = parent
+    return pad
+end
+-- =====END FUNCTION UIPADDING======
+
+--====== CLIENT SERVICES ======--
+
+-- UI / Player Interface
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+local GuiService = game:GetService("GuiService")
+local Players = game:GetService("Players")
+
+-- 3D/2D Destroy
+-- local Debris = game:GetService("Debris")
+
+-- 3D Wprkspace
+local Workspace = game:GetService("Workspace")
+-- local TeleportService = game:GetService("TeleportService")
+local Camera = Workspace.CurrentCamera
+--[[ if Camera == Workspace.CurrentCamera then
+  -- Do nothing
+else
+  Camera = nil
+end
+]]
+
+-- Third Party
+local HttpService = game:GetService("HttpService")
+
+-- Audio / Feedback
+
+
+-- Commerce / Monetization
+local MarketplaceService = game:GetService("MarketplaceService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+
+-- Runtime / Frame Updates
+local RunService = game:GetService("RunService")
+
+-- Animation / Transitions
+local TweenService = game:GetService("TweenService")
+
+-- Input (Desktop / Mobile)
+local UserInputService = game:GetService("UserInputService")
+local TouchInputService = game:GetService("TouchInputService")
+
+---------------------------------------------------------------------------------------
+
+local Folder = Instance.new("Folder")
+Folder.Name = "ExperienceSettings-Executor"
+Folder.Parent = CoreGui
+
+local Windows = Instance.new("ScreenGui")
+Windows.Name = "Main"
+Windows.DisplayOrder = 2147483647
+Windows.ScreenInsets = Enum.ScreenInsets.None
+Windows.Parent = Folder
+
+local Bg = Instance.new("Frame")
+Bg.Name = "Background"
+Bg.Size = UDim2.new(1,0,1,0)
+Bg.BackgroundColor3 = Color3.fromRGB(18,18,21)
+Bg.BackgroundTransparency = 0.3
+Bg.Active = false
+Bg.Parent = Windows
+
+Bg.Transparency = 1
+
+local Bg2 = Instance.new("Frame")
+Bg2.Name = "Background2"
+Bg2.Size = UDim2.new(1,0,1,0)
+Bg2.BackgroundColor3 = Color3.fromRGB(18,18,21)
+Bg2.BackgroundTransparency = 1
+Bg2.Active = false
+Bg2.Parent = Windows
+
+
+local oc = Instance.new("ImageButton")
+oc.Name = "connect"
+oc.Size = UDim2.new(0.04,0,0.08,0)
+oc.Position = UDim2.new(0,15,0.015,0)
+oc.BackgroundColor3 = Color3.fromRGB(18,18,21)
+oc.Transparency = 0.08
+oc.Draggable = true
+oc.Image = "rbxassetid://116278455133074" -- Open
+oc.Parent = Bg2
+Corner(1,0, oc)
+Stroke(oc, ASMBorder, 255,255,255, LJMRound, 2, 0)
+
+-- Season
+oc.Image = "rbxassetid://117526277216392"
+
+local aspectConstraint = Instance.new("UIAspectRatioConstraint")
+  aspectConstraint.AspectRatio = 1 -- 1:1 Square ratio
+  aspectConstraint.AspectType = Enum.AspectType.FitWithinMaxSize
+  aspectConstraint.DominantAxis = Enum.DominantAxis.Height -- Adjusts width to match height
+  aspectConstraint.Parent = oc
+
+local st = CoreGui["ExperienceSettings-Executor"].Main.Background2.connect.UIStroke
+Gradient(st, 0, 0, 0,
+    Color3.fromRGB(255,255,255),
+    Color3.fromRGB(255,0,0)
+)
+
+local gr = st.UIGradient
+
+task.spawn(function()
+    while true do
+        task.wait(0.001)
+        gr.Rotation += 3
+        if gr.Rotation == 360 then
+           gr.Rotation = 0
+        end
+
+    end
+end)
+
+-- Close: oc.Image = "rbxassetid://120294896493053"
+
+local container = Bg2
+
+local function clampPosition()
+    local parentSize = container.AbsoluteSize
+    local objSize = oc.AbsoluteSize
+    local pos = oc.Position
+
+    -- คำนวณตำแหน่งจริงบนจอ
+    local absX = pos.X.Scale * parentSize.X + pos.X.Offset
+    local absY = pos.Y.Scale * parentSize.Y + pos.Y.Offset
+
+    -- clamp
+    absX = math.clamp(absX, 0, parentSize.X - objSize.X)
+    absY = math.clamp(absY, 0, parentSize.Y - objSize.Y)
+
+    -- แปลงกลับเป็น Offset แต่ "เก็บ Scale เดิม"
+    local newOffsetX = absX - (pos.X.Scale * parentSize.X)
+    local newOffsetY = absY - (pos.Y.Scale * parentSize.Y)
+
+    oc.Position = UDim2.new(
+        pos.X.Scale, newOffsetX,
+        pos.Y.Scale, newOffsetY
+    )
+end
+
+oc:GetPropertyChangedSignal("Position"):Connect(clampPosition)
+clampPosition()
+
+------------------------------
+
+local Bghr = Instance.new("CanvasGroup")
+Bghr.Name = "Windows"
+Bghr.Size = UDim2.new(1,0,0.85,0)
+Bghr.BackgroundTransparency = 1
+Bghr.Active = false
+Bghr.Position = UDim2.new(0,0,-1,0)
+Bghr.Parent = Bg
+
+local Frame = {
+    Home = Instance.new("CanvasGroup"),
+    Edit = Instance.new("CanvasGroup"),
+	AutoExe = Instance.new("CanvasGroup"),
+    Console = Instance.new("CanvasGroup"),
+	ExpInfo = Instance.new("CanvasGroup"),
+    Folder = Instance.new("CanvasGroup"),
+    Bookmark = Instance.new("CanvasGroup"),
+    Search = Instance.new("CanvasGroup"),
+    Music = Instance.new("CanvasGroup"),
+    Settings = Instance.new("CanvasGroup")
+}
+
+local function Configure(frame)
+    frame.Visible = true
+    frame.Size = UDim2.new(0.8, 0, 0.8, 0)
+    frame.Position = UDim2.new(0.1, 0, -1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(18, 18, 21)
+    frame.BackgroundTransparency = 0.35
+    frame.Parent = Bghr
+    Corner(0.05,0,frame)
+    Stroke(frame, ASMBorder, 255, 255, 255, LJMRound, 1.5, 0)
+    
+    local Inside = Instance.new("Frame")
+    Inside.Name = "Inside"
+    Inside.Size = UDim2.new(0.95,0,0.8,0)
+    Inside.Position = UDim2.new(0.025,0,2,0) -- On is (0.025,0,0.15,0)
+    Inside.BackgroundTransparency = 1
+    Inside.Active = false
+    Inside.Parent = frame
+
+	local Tittle = Instance.new("TextLabel")
+	Tittle.Name = "Tittle"
+	Tittle.Size = UDim2.new(0.95,0,0.09,0)
+	Tittle.Position = UDim2.new(0.025,0,0.05,0)
+	Tittle.BackgroundTransparency = 1
+	Tittle.TextScaled = true
+	Tittle.Text = "Unknown Page"
+	Tittle.TextColor3 = Color3.new(1,1,1)
+	Tittle.TextStrokeColor3 = Color3.new(1,1,1)
+	Tittle.TextStrokeTransparency = 0
+	Tittle.TextXAlignment = Enum.TextXAlignment.Left
+	Tittle.Parent = frame
+    
+    local soon = Instance.new("TextLabel")
+    soon.Name = "soon"
+    soon.Visible = false
+    soon.Size = UDim2.new(1,0,1,0)
+    soon.BackgroundTransparency = 1
+    soon.TextColor3 = Color3.fromRGB(255,255,255)
+    soon.RichText = true
+    soon.Text = [[ <b><font size="15">Coming soon...</font></b> ]]
+    soon.Parent = Inside
+    Corner(0.1,0,soon)
+end
+
+Configure(Frame.Home)
+Configure(Frame.Edit)
+Configure(Frame.AutoExe)
+Configure(Frame.Console)
+Configure(Frame.ExpInfo)
+Configure(Frame.Folder)
+Configure(Frame.Bookmark)
+Configure(Frame.Search)
+Configure(Frame.Music)
+Configure(Frame.Settings)
+
+--[ Name ]
+Frame.Home.Name = "Home"
+Frame.Edit.Name = "Edit"
+Frame.AutoExe.Name = "AutoExe"
+Frame.Console.Name = "Console"
+Frame.ExpInfo.Name = "ExpInfo"
+Frame.Folder.Name = "Folder"
+Frame.Bookmark.Name = "Bookmark"
+Frame.Search.Name = "Search"
+Frame.Music.Name = "Music"
+Frame.Settings.Name = "Settings"
+
+--[ Tittle ]
+Frame.Home.Tittle.Text = "Home"
+Frame.Edit.Tittle.Text = "Editor"
+Frame.AutoExe.Tittle.Text = "Auto Execute"
+Frame.Console.Tittle.Text = "Console"
+Frame.ExpInfo.Tittle.Text = "Experience Information"
+Frame.Folder.Tittle.Text = "Device Folder"
+Frame.Bookmark.Tittle.Text = "Bookmark Script"
+Frame.Search.Tittle.Text = "Search Script"
+Frame.Music.Tittle.Text = "Music and Audio"
+Frame.Settings.Tittle.Text = "Settings"
+
+--[ Visible ]
+Frame.AutoExe.Inside.soon.Visible = true
+Frame.Console.Inside.soon.Visible = true
+Frame.ExpInfo.Inside.soon.Visible = true
+Frame.Folder.Inside.soon.Visible = true
+Frame.Bookmark.Inside.soon.Visible = true
+Frame.Search.Inside.soon.Visible = true
+Frame.Music.Inside.soon.Visible = true
+Frame.Settings.Inside.soon.Visible = true
+
+Frame.AutoExe.Inside.soon.Text = [[<b><font size="15">Coming Soon...</font></b>
+But "AutoExe" is exist, so try to check on ExperienceSettings-Executor Folder on your device!]]
+
+Frame.Console.Inside.soon.Text = [[<b><font size="15">Something was wrong...</font></b>
+Tried to load console while executing. Please open dex explorer and find "ExperienceSettings-Executor" folder in CoreGui and destroy all folder that have same name or rejoin the game.]]
+------------------------------------------------------------
+local topn = Instance.new("Frame")
+topn.Name = "TopNoity"
+topn.Position = UDim2.new(0,0,0.033,0)
+topn.Size = UDim2.new(1,0,0,43)
+topn.BackgroundTransparency = 1
+topn.Active = false
+topn.Parent = Bg
+ListLayout(topn, 0,5, HCenter, VTop, SLayout, FillV)
+
+------------------------------------------------------------
+-- local function
+------------------------------------------------------------
+local TextService = game:GetService("TextService")
+
+local color = {
+    red = Color3.fromRGB(255,0,0), -- suitable for error
+    orange = Color3.fromRGB(255,85,0), -- suitable for somthing
+    yellow = Color3.fromRGB(255,255,0), -- sutiable for warning
+    green = Color3.fromRGB(0,255,0), -- suitable for working
+    cyan = Color3.fromRGB(0,255,255), --suitablr for something
+    blue = Color3.fromRGB(0,0,255), -- sutiable for information
+    pink = Color3.fromRGB(255,0,255), -- suitable for something
+    purple = Color3.fromRGB(170,0,255), -- suitable for something
+    nor = Color3.fromRGB(255,255,255) -- sutiable for custom
+}
+
+-- ฟังก์ชันแจ้งเตือน
+local function noti(times, text, colorValue)
+    local finalColor = colorValue or color.nor
+
+    -- กล่องแจ้งเตือน
+    local txt = Instance.new("TextLabel")
+    txt.Name = "Notify"
+    txt.BackgroundColor3 = Color3.fromRGB(18,18,21)
+    txt.BackgroundTransparency = 0.25
+    txt.TextWrap = true
+    txt.RichText = true
+    txt.TextScaled = false
+    txt.TextSize = 18
+    txt.Font = Enum.Font.GothamBold
+    txt.Text = tostring(text)
+    txt.TextColor3 = finalColor
+    txt.ClipsDescendants = true
+    txt.Parent = topn
+
+    Corner(0,7,txt)
+
+    -- แปลง Color3 → RGB
+    local r = finalColor.R * 255
+    local g = finalColor.G * 255
+    local b = finalColor.B * 255
+
+    Stroke(txt, ASMBorder, r, g, b, LJMRound, 1, 0)
+
+    -- คำนวณขนาดข้อความ
+    local textSize = TextService:GetTextSize(
+        txt.Text,
+        txt.TextSize,
+        txt.Font,
+        Vector2.new(1000, 100)
+    )
+
+    local padding = 30
+    local finalSize = UDim2.new(0, textSize.X + padding, 0, textSize.Y + 20)
+
+    -- เริ่มต้นเป็นศูนย์ก่อน
+    txt.Size = UDim2.new(0,0,0,0)
+
+    -- Tween ขยายเข้า
+    TweenService:Create(
+        txt,
+        TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = finalSize}
+    ):Play()
+
+    -- time bar
+    local bar = Instance.new("Frame")
+    bar.Name = "time"
+    bar.Position = UDim2.new(0,0,0.9,0)
+    bar.Size = UDim2.new(1,0,0,2)
+    bar.BackgroundColor3 = finalColor
+    bar.BorderSizePixel = 0
+    bar.Parent = txt
+
+    -- Tween time bar
+    local barTween = TweenService:Create(
+        bar,
+        TweenInfo.new(times, Enum.EasingStyle.Linear),
+        {Size = UDim2.new(0,0,0,2)}
+    )
+    barTween:Play()
+
+    -- เมื่อ time หมด
+    barTween.Completed:Connect(function()
+
+        local hideTween = TweenService:Create(
+            txt,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {
+                Size = UDim2.new(0,0,0,0),
+                BackgroundTransparency = 1,
+                TextTransparency = 1
+            }
+        )
+        hideTween:Play()
+
+        hideTween.Completed:Connect(function()
+            txt:Destroy()
+        end)
+    end)
+end
+
+--// ===============================
+--// PATH + FOLDER SETUP
+--// ===============================
+
+local base = "ExperienceSettings-Executor"
+local tabsPath = base .. "/Tabs"
+local jsonPath = base .. "/workin.json"
+
+-- สร้าง base folder
+if not isfolder(base) then
+	makefolder(base)
+end
+
+-- สร้าง sub folders
+local folders = { "Workspace", "AutoExe", "Tabs", "Save", "Assets", "Logs", ".Config" }
+
+for _, folder in ipairs(folders) do
+	local path = base .. "/" .. folder
+	if not isfolder(path) then
+		makefolder(path)
+	end
+end
+
+-- Execute button
+local executeBtn = eftabs and eftabs:FindFirstChild("Execute")
+
+if executeBtn then
+	
+	executeBtn.MouseButton1Click:Connect(function()
+
+		if Editb and Editb.Text then
+			
+			if string.find(Editb.Text,"getLoad%(Asset%)") then
+				getLoad("Asset")
+			end
+			
+		end
+
+	end)
+	
+end
+
+
+------------------------------------------------------------
+-- home
+------------------------------------------------------------
+
+--[[ USER ]]
+local user = Instance.new("Frame")
+user.Name = "User"
+user.Size = UDim2.new(0.5,0,0.2,0)
+user.BackgroundColor3 = Color3.fromRGB(255,255,255)
+user.Active = false
+user.Parent = Frame.Home.Inside
+Corner(0.1,0,user)
+Stroke(user, ASMBorder, 255,255,255, LJMRound, 1, 0)
+Gradient(user, 90,0,0,
+  Color3.fromRGB(85,0,127),
+  Color3.fromRGB(0,0,127)
+)
+
+local imauser = Instance.new("ImageLabel")
+imauser.Name = "ImageLocalUser"
+imauser.Size = UDim2.new(1,0,0.8,0)
+imauser.Position = UDim2.new(0.025,0,0.1,0)
+imauser.BackgroundColor3 = Color3.fromRGB(255,255,255)
+imauser.BackgroundTransparency = 0.5
+imauser.Image = "rbxassetid://"
+imauser.Parent = user
+Corner(0.1,0,imauser)
+Stroke(imauser, ASMBorder, 255,255,255, LJMRound, 1, 0)
+-- UIAspectRatioConstraint
+local imauia = Instance.new("UIAspectRatioConstraint")
+imauia.Parent = imauser
+ 
+--[[ Label ]]
+local lauser = Instance.new("TextLabel")
+lauser.Name = "TheWelcome"
+lauser.Position = UDim2.new(0.215,0,0.25,0)
+lauser.Size = UDim2.new(0.75,0,0.5,0)
+lauser.BackgroundTransparency = 1
+lauser.Text = "Hello!, @Username."
+lauser.TextColor3 = Color3.fromRGB(255,255,255)
+lauser.TextScaled = true
+lauser.TextXAlignment = Enum.TextXAlignment.Left
+lauser.TextYAlignment = Enum.TextYAlignment.Center
+lauser.Parent = user
+
+--[[ Script ]]
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- โหลดรูปผู้เล่น
+local userId = player.UserId
+local thumbType = Enum.ThumbnailType.HeadShot
+local thumbSize = Enum.ThumbnailSize.Size420x420
+
+local content, isReady = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+imauser.Image = content
+
+
+-- ตรวจเวลา
+local hour = tonumber(os.date("%H")) -- ได้ค่า 0 - 23
+
+local timeGreeting = nil
+
+if hour >= 5 and hour < 12 then
+    timeGreeting = "Good morning"
+elseif hour >= 12 and hour < 15 then
+    timeGreeting = "Good afternoon"
+elseif hour >= 15 and hour < 20 then
+    timeGreeting = "Good evening"
+elseif hour >= 20 and hour < 23 then
+    timeGreeting = "Good night"
+else
+    timeGreeting = "Good midnight"
+end
+
+
+-- ข้อความสุ่ม
+local greetings = {
+    "Hello",
+    "Welcome back",
+    "Yo",
+    "Greeting",
+    "What's up",
+    "Hey",
+    "Ay",
+    timeGreeting
+}
+
+-- เลือกแบบสุ่ม
+local randomText = greetings[math.random(1, #greetings)]
+
+-- ใส่ชื่อผู้เล่น
+lauser.Text = randomText .. ", " .. player.Name .. "."
+
+--[[ Note ]]
+local frtxt = Instance.new("Frame")
+frtxt.Name = "Note"
+frtxt.Position = UDim2.new(0,0,0.25,0)
+frtxt.Size = UDim2.new(0.5,0,0.75,0)
+frtxt.BackgroundColor3 = Color3.fromRGB(255,255,255)
+frtxt.Active = false
+frtxt.Parent = Frame.Home.Inside
+Corner(0.05,0,frtxt)
+Stroke(frtxt, ASMBorder, 255,255,255, LJMRound, 1, 0)
+Gradient(frtxt, 45,0,0,
+  Color3.fromRGB(0,0,170),
+  Color3.fromRGB(0,100,255)
+)
+
+local sctxt = Instance.new("ScrollingFrame")
+sctxt.Name = "Scroll"
+sctxt.Position = UDim2.new(0.05,0,0,0)
+sctxt.Size = UDim2.new(0.9,0,1,0)
+sctxt.BackgroundTransparency = 1
+sctxt.ScrollBarThickness = 0
+sctxt.CanvasSize = UDim2.new(0,0,10,0)
+sctxt.Parent = frtxt
+
+
+local ttxt = Instance.new("TextLabel")
+ttxt.Name = "Text"
+ttxt.Size = UDim2.new(1,0,1,0)
+ttxt.BackgroundTransparency = 1
+ttxt.Active = false
+ttxt.Text = [[
+<b><font size="15">Note</font></b> 
+ExperienceSettings Executor is for debugging script and it use only for executor app, so thank you for using our executor!
+
+<b><font size="15">What is executor for?</font></b>
+For Integrated Development Environment (IDE) programing.
+
+<b><font size="15">Credit</font></b>
+@ziaa (rscripts.net)
+
+<b><font size="15">Custom syntax by @ziaa</font></b>
+--[ getLoad ]--
+ 1. getLoad(VARIABLE)
+     • Get VARIABLE from local
+     
+ 2. getLoad(function()end)
+     • Get function
+     • getLoad(function()
+        print("hi")
+       end)
+
+ 3. getLoad.fromURL("") -- loadstring()
+     • Working like loadstring but take long
+     
+ 4. getLoad.fromPath("Name/")
+     • Get path in your device ( Executor )
+     
+ 5. getLoad:Settings(Enums.Settings.DelExe)
+     • Delete ES Executor
+     
+ 6. getLoad:Settings(Enums.Settings.ReloadExe)
+     • Reload ES Executor
+     
+ 7. getLoad:Data(Download.Asset("png"))
+     • Download all pngs ( Important for getcustomasset )
+     
+ 8. getLoad:Data(Download.FailedAsset("png"))
+     • Same as Download but its only load failed assets
+     
+ 9. getLoad:Data(Check.Asset("png"))
+     • Check all assets png
+     
+10. getLoad:Data(Del.Asset("png"))
+     • Delete all assets png
+
+<b><font size="15">Support and Not Support getcustomasset()</font></b>
+
+--[ Mobile Executor ]--
+ 1. Krnl (freakin dead | Confirmed by internet)
+ 2. Codex
+ 3. Cryptic
+ 4. VegaX
+ 5. Delta
+ 6. Ronix
+
+--[ Pc Executor ( Confirmed by website ) ]--
+ 1. Volt
+ 2. Wave
+ 3. Volcano
+ 4. Bunni
+ 5. FluxesZ
+
+--====[NOT SUPPORT ]====--
+
+--[ Mobile Executor ]--
+ 1. JJsploit ( FREAKIN' DEAD LOL )
+ 
+--[ Pc Executor ( Confirmed by website ) ]--
+ 1. Xeno
+ 2. JJsploit ( Currently checking )
+ 
+--====[ IN COMING ]====--
+ 1. Cubix ( Let see when this executor available )
+
+<b><font size="15">Contact us</font></b>
+Join our Discord server for more information!
+Feel free to suggest any ideas you'd like to share!
+
+<b><font size="15">Executor Verison</font></b>
+]] .. Version
+
+ttxt.TextColor3 = Color3.fromRGB(255,255,255)
+ttxt.TextSize = 10
+ttxt.RichText = true
+ttxt.TextWrap = true
+ttxt.TextXAlignment = Enum.TextXAlignment.Left
+ttxt.TextYAlignment = Enum.TextYAlignment.Top
+ttxt.Parent = sctxt
+
+--[[ soon ]]
+local son = Instance.new("TextLabel")
+son.Name = "ScriptList"
+son.Position = UDim2.new(0.52,0,0.25,0)
+son.Size = UDim2.new(0.48,0,0.75,0)
+son.BackgroundTransparency = 1
+son.Active = false
+son.Text = [[
+<b><font size="15">Script hub</font></b> 
+⟩⟩ Also try universal script ⟨⟨
+]]
+
+son.TextColor3 = Color3.fromRGB(255,255,255)
+son.TextSize = 10
+son.RichText = true
+son.TextWrap = true
+son.TextXAlignment = Enum.TextXAlignment.Center
+son.TextYAlignment = Enum.TextYAlignment.Top
+son.Parent = Frame.Home.Inside
+Corner(0.05,0, son)
+Stroke(son, ASMBorder, 255,255,255, LJMRound, 1, 0)
+
+local sons = Instance.new("ScrollingFrame")
+sons.Name = "List"
+sons.Position = UDim2.new(0,0,0.2,0)
+sons.Size = UDim2.new(1,0,0.8,0)
+sons.BackgroundTransparency = 1
+sons.ScrollBarThickness = 0
+sons.CanvasSize = UDim2.new(0,0,0,0)
+sons.Parent = son
+
+local sonf = Instance.new("Frame")
+sonf.Name = "Holder"
+sonf.Position = UDim2.new(0.05,0,0.03,0)
+sonf.Size = UDim2.new(0.9,0,0.95,0)
+sonf.BackgroundTransparency = 1
+sonf.Active = false
+sonf.Parent = sons
+
+local uigr = Instance.new("UIGridLayout")
+uigr.CellSize = UDim2.new(1,0,0,50)
+uigr.CellPadding = UDim2.new(0,0,0,5)
+uigr.Parent = sonf
+
+local function scr(Pname, Sname, scriptSource, callback)
+
+	-- =========================
+	-- 📦 Card Container
+	-- =========================
+	local add = Instance.new("Frame")
+	add.Name = tostring(Pname)
+	add.Size = UDim2.new(1,0,0,50)
+	add.BackgroundColor3 = Color3.new(1,1,1)
+	add.BackgroundTransparency = 0
+	add.Parent = sonf
+	Stroke(add, ASMBorder, 255,255,255, LJMRound, 1, 0)
+	
+	Corner(0.1,0,add)
+	Gradient(add, -90,0,0,
+  Color3.fromRGB(0,0,170),
+  Color3.fromRGB(0,100,255)
+  )
+
+	local ins = Instance.new("Frame")
+	ins.Name = "Inside"
+	ins.Position = UDim2.new(0.05,0,0.1,0)
+	ins.Size = UDim2.new(0.9,0,0.8,0)
+	ins.BackgroundTransparency = 1
+	ins.Parent = add
+
+	-- =========================
+	-- 📝 Script Name
+	-- =========================
+	local txt = Instance.new("TextLabel")
+	txt.Size = UDim2.new(0.5,0,1,0)
+	txt.BackgroundTransparency = 1
+	txt.TextScaled = true
+	txt.RichText = true
+	txt.Text = tostring(Sname)
+	txt.TextXAlignment = Enum.TextXAlignment.Left
+	txt.TextYAlignment = Enum.TextYAlignment.Center
+	txt.TextStrokeTransparency = 0
+	txt.TextColor3 = Color3.new(1,1,1)
+	txt.TextStrokeColor3 = Color3.new(0,0,0)
+	txt.Parent = ins
+
+	-- =========================
+	-- 📋 Copy Button
+	-- =========================
+	local copy = Instance.new("ImageButton")
+	copy.Position = UDim2.new(0.72,0,0,5)
+	copy.Size = UDim2.new(0,30,0,30)
+	copy.BackgroundColor3 = Color3.new(0,0,0)
+	copy.Image = "rbxassetid://70463360371392"
+	copy.Parent = ins
+	
+	Corner(0.2,0,copy)
+	Stroke(copy, ASMBorder, 255,255,255, LJMRound, 1, 0)
+
+	copy.MouseButton1Click:Connect(function()
+		if setclipboard then
+			setclipboard(scriptSource)
+			noti(2, "Copied: "..Sname, color.yellow)
+		else
+			noti(3, "Clipboard not supported.", color.red)
+		end
+	end)
+
+	-- =========================
+	-- ▶ Execute Button
+	-- =========================
+	local exe = Instance.new("ImageButton")
+	exe.Position = UDim2.new(0.85,0,0,5)
+	exe.Size = UDim2.new(0,30,0,30)
+	exe.BackgroundColor3 = Color3.new(0,0,0)
+	exe.Image = "rbxassetid://104470314612186"
+	exe.Parent = ins
+	
+	Corner(0.2,0,exe)
+	Stroke(exe, ASMBorder, 255,255,255, LJMRound, 1, 0)
+
+	exe.MouseButton1Click:Connect(function()
+
+		if not scriptSource or scriptSource == "" then
+			noti(3, "No script source.", color.red)
+			return
+		end
+
+		noti(2, "Executing: "..Sname, color.yellow)
+
+		-- Compile
+		local f, compileErr = loadstring(scriptSource)
+
+		if not f then
+			local line = tostring(compileErr):match(":(%d+):") or "?"
+			noti(10,
+				"[COMPILE ERROR]\nLine: "..line..
+				"\n"..compileErr,
+				color.red
+			)
+			return
+		end
+
+		-- Runtime
+		local success, runtimeErr = pcall(f)
+
+		if success then
+			noti(2, "Executed: "..Sname, color.green)
+
+			if callback then
+				pcall(callback)
+			end
+		else
+			local line = tostring(runtimeErr):match(":(%d+):") or "?"
+			noti(10,
+				"[RUNTIME ERROR]\nLine: "..line..
+				"\n"..runtimeErr,
+				color.red
+			)
+		end
+
+	end)
+
+end
+
+scr("InfiniteYield", "Infinite Yield | by @edge_egg (Discord)",
+  [[
+  loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+  ]]
+)
+
+scr("DexExplorerPlusPlus", "DEX Explorer Plus+ | by @NullSpecter (ORIGINAL: Chillz)",
+  [[
+  loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
+  ]]
+)
+
+scr("ExperienceSettings", "ExperienceSettings | by @ziaa",
+  [[
+  loadstring(game:HttpGet("https://bit.ly/49157tB", true))()
+  ]]
+)
+
+scr("YARHM", "YARHM | by @Imperial",
+  [[local src = ""
+local CoreGui = game:GetService("StarterGui")
+
+pcall(function() 
+    src = game:HttpGet("https://yarhm.mhi.im/scr", false)
+end)
+if src == "" then
+  CoreGui:SetCore("SendNotification", {
+  	Title = "YARHM Outage";
+  	Text = "YARHM Online is currently unavailable! Sorry for the inconvenience. Using YARHM Offline.";
+	  Duration = 5;
+  })
+  src = game:HttpGet("https://raw.githubusercontent.com/Joystickplays/psychic-octo-invention/main/source/yarhm/1.20/yarhm.lua", false)
+end
+
+
+loadstring(src)()
+
+]])
+
+scr("SmoothFreecam", "Smooth Freecam  | by @Styear", 
+  [[loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Smooth-Freecam-123026"))()
+]])
+
+scr("seacrhscript", "Seacrh script | by @Pancho",
+  [[loadstring(game:HttpGet("https://raw.githubusercontent.com/panchooo677/K66j/refs/heads/main/README.md"))()
+  ]])
+
+scr("VSCode", "VSCode Open Source | by @Cherry | [PC ONLY]",
+[[loadstring(game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/VSCode/refs/heads/main/VSCode.lua"))()
+]])
+
+scr("sUNC", "Unc Test | by @Alexchad", 
+  [[loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Unc-Test-67860"))()
+]])
+
+scr("YTMP", "YouTube Music Player | by Termux_404",
+	[[loadstring(game:HttpGet(('https://raw.githubusercontent.com/Dan41/Roblox-Scripts/refs/heads/main/Youtube%20Music%20Player/YoutubeMusicPlayer.lua'),true))()
+]])
+
+-- Update scroll automatically
+local function updateCanvas()
+	local contentY = uigr.AbsoluteContentSize.Y
+	local extraPadding = 20 -- กัน stroke / rounding
+	sons.CanvasSize = UDim2.new(0,0,0, contentY + extraPadding)
+end
+
+updateCanvas()
+
+--[[ Soucre ]]
+local dis = Instance.new("TextButton")
+dis.Name = "Discord"
+dis.Position = UDim2.new(0.52,0,0,0)
+dis.Size = UDim2.new(0.48,0,0.2,0)
+dis.BackgroundColor3 = Color3.fromRGB(27, 42, 53)
+dis.TextSize = 20
+dis.Text = "Join our Discord community! [ Copy ]"
+dis.TextColor3 = Color3.fromRGB(255,255,255)
+dis.TextWrap = true
+dis.Parent = Frame.Home.Inside
+Corner(0.05,0, dis)
+Stroke(dis, ASMBorder, 255,255,255, LJMRound, 1, 0)
+Gradient(dis, 90,0,0,
+  Color3.fromRGB(170,0,255),
+  Color3.fromRGB(0,170,255)
+)
+
+dis.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/HR7zNFrNET")
+    noti(3, "<b>Copied!</b> Discord link copied to clipboard", color.green)
+end)
+
+------------------------------------------------------------
+-- edit
+------------------------------------------------------------
+local edits = Instance.new("ScrollingFrame")
+edits.Name = "EditScroll"
+edits.Size = UDim2.new(0.5,0,1,0)
+edits.BackgroundTransparency = 0
+edits.BackgroundColor3 = Color3.fromRGB(0,0,0)
+edits.ScrollBarThickness = 1
+edits.CanvasSize = UDim2.new(10,0,100,0)
+edits.Parent = Frame.Edit.Inside
+
+local editb = Instance.new("TextBox")
+editb.Name = "Edit"
+editb.Size = UDim2.new(1,0,1,0)
+editb.Position = UDim2.new(0,50,0,0)
+editb.ClearTextOnFocus = false
+editb.BackgroundTransparency = 1
+editb.TextTransparency = 1
+editb.TextSize = 15
+editb.TextWrap = true
+editb.RichText = true
+editb.Text = 'print("Hello, World!")'
+editb.TextColor3 = Color3.fromRGB(255,255,255)
+editb.TextXAlignment = Enum.TextXAlignment.Left
+editb.TextYAlignment = Enum.TextYAlignment.Top
+editb.Parent = edits
+
+--[ Script (Syntax) ]
+
+--// PATH
+local executor = CoreGui:WaitForChild("ExperienceSettings-Executor")
+local scroll = executor.Main.Background.Windows.Edit.Inside.EditScroll
+local editBox = scroll.Edit -- USE ONE ONLY
+
+--// CONFIG
+local FONT = Enum.Font.Code
+local TEXT_SIZE = 15
+local LINE_HEIGHT = 18
+local MAX_CANVAS_HEIGHT = 180000
+local VISIBLE_BUFFER = 80
+
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.None
+
+--// TEXTBOX SETUP
+editBox.MultiLine = true
+editBox.ClearTextOnFocus = false
+editBox.TextWrapped = false
+editBox.Font = FONT
+editBox.TextSize = TEXT_SIZE
+editBox.TextColor3 = Color3.fromRGB(255,255,255)
+editBox.TextXAlignment = Enum.TextXAlignment.Left
+editBox.TextYAlignment = Enum.TextYAlignment.Top
+editBox.BackgroundTransparency = 1
+editBox.ZIndex = 3
+
+--// HIGHLIGHT LAYER
+local highlight = Instance.new("TextLabel")
+highlight.Name = "SyntaxColor"
+highlight.BackgroundTransparency = 1
+highlight.TextColor3 = Color3.new(1,1,1)
+highlight.RichText = true
+highlight.Font = FONT
+highlight.TextSize = TEXT_SIZE
+highlight.TextWrapped = false
+highlight.TextXAlignment = Enum.TextXAlignment.Left
+highlight.TextYAlignment = Enum.TextYAlignment.Top
+highlight.ZIndex = 2
+highlight.Parent = scroll
+
+--// LINE NUMBERS
+local lineNumbers = Instance.new("TextLabel")
+lineNumbers.BackgroundColor3 = Color3.fromRGB(25,25,25)
+lineNumbers.BorderSizePixel = 0
+lineNumbers.Font = FONT
+lineNumbers.TextSize = TEXT_SIZE
+lineNumbers.TextColor3 = Color3.fromRGB(140,140,140)
+lineNumbers.TextXAlignment = Enum.TextXAlignment.Right
+lineNumbers.TextYAlignment = Enum.TextYAlignment.Top
+lineNumbers.ZIndex = 1
+lineNumbers.Parent = scroll
+
+--//COLORS
+local COLORS = {
+	Keyword   = "#c586c0",
+	Comment   = "#6a9955",
+	String    = "#ce9178",
+	Datatype  = "#ff0000",
+	Global    = "#4ec9b0",
+	Class     = "#00FFFF",
+	Enum      = "#ff8c00",
+	Exe       = "#FFFF00",
+}
+
+
+local keywords = {  
+["break"]=true,
+["do"]=true,
+["else"]=true,
+["elseif"]=true,
+["end"]=true,
+["false"]=true,
+["for"]=true,
+["function"]=true,
+["if"]=true,
+["in"]=true,
+["local"]=true,
+["nil"]=true,
+["not"]=true,
+["or"]=true,
+["repeat"]=true,
+["return"]=true,
+["then"]=true,
+["true"]=true,
+["until"]=true,
+["while"]=true,
+["type"]=true,
+["goto"]=true,
+}
+
+local datatype = {
+
+	["Axes"] = true,
+	["BrickColor"] = true,
+	["CatalogSearchParams"] = true,
+	["CFrame"] = true,
+	["Color3"] = true,
+	["ColorSequence"] = true,
+	["ColorSequenceKeypoint"] = true,
+	["Content"] = true,
+	["DateTime"] = true,
+	["DockWidgetPluginGuiInfo"] = true,
+	["Enum"] = true,
+	["EnumItem"] = true,
+	["Enums"] = true,
+	["Faces"] = true,
+	["FloatCurveKey"] = true,
+	["Font"] = true,
+	["Instance"] = true,
+	["NumberRange"] = true,
+	["NumberSequence"] = true,
+	["NumberSequenceKeypoint"] = true,
+	["OverlapParams"] = true,
+	["Path2DControlPoint"] = true,
+	["PathWaypoint"] = true,
+	["PhysicalProperties"] = true,
+	["Random"] = true,
+	["Ray"] = true,
+	["RaycastParams"] = true,
+	["RaycastResult"] = true,
+	["RBXScriptConnection"] = true,
+	["RBXScriptSignal"] = true,
+	["Rect"] = true,
+	["Region3"] = true,
+	["Region3int16"] = true,
+	["RotationCurveKey"] = true,
+	["Secret"] = true,
+	["SecurityCapabilities"] = true,
+	["SharedTable"] = true,
+	["TweenInfo"] = true,
+	["UDim"] = true,
+	["UDim2"] = true,
+	["ValueCurveKey"] = true,
+	["Vector2"] = true,
+	["Vector2int16"] = true,
+	["Vector3"] = true,
+	["Vector3int16"] = true,
+}
+
+local globals = {
+
+	["assert"]=true,
+	["collectgarbage"]=true,
+	["DebuggerManager"]=true,
+	["delay"]=true,
+	["elapsedTime"]=true,
+	["Enum"]=true,
+	["error"]=true,
+	["game"]=true,
+	["gcinfo"]=true,
+	["getfenv"]=true,
+	["getmetatable"]=true,
+	["ipairs"]=true,
+	["loadstring"]=true,
+	["newproxy"]=true,
+	["next"]=true,
+	["pairs"]=true,
+	["pcall"]=true,
+	["plugin"]=true,
+	["PluginManager"]=true,
+	["print"]=true,
+	["printidentity"]=true,
+	["rawequal"]=true,
+	["rawget"]=true,
+	["rawlen"]=true,
+	["rawset"]=true,
+	["require"]=true,
+	["script"]=true,
+	["select"]=true,
+	["setfenv"]=true,
+	["setmetatable"]=true,
+	["settings"]=true,
+	["shared"]=true,
+	["spawn"]=true,
+	["stats"]=true,
+	["tick"]=true,
+	["time"]=true,
+	["tonumber"]=true,
+	["tostring"]=true,
+	["type"]=true,
+	["typeof"]=true,
+	["unpack"]=true,
+	["UserSettings"]=true,
+	["version"]=true,
+	["wait"]=true,
+	["warn"]=true,
+	["workspace"]=true,
+	["xpcall"]=true,
+	["ypcall"]=true,
+	["_G"]=true,
+	["_VERSION"]=true,
+}
+
+local classList = {
+"Accessory",
+"AccessoryDescription",
+"Accoutrement",
+"Actor",
+"AdGui",
+"AdPortal",
+"AdService",
+"AdvancedDragger",
+"AirController",
+"AlignOrientation",
+"AlignPosition",
+"AnalyticsService",
+"AngularVelocity",
+"Animation",
+"AnimationClip",
+"AnimationClipProvider",
+"AnimationConstraint",
+"AnimationController",
+"AnimationFromVideoCreatorService",
+"AnimationRigData",
+"AnimationTrack",
+"Animator",
+"Annotation",
+"ArcHandles",
+"AssetDeliveryProxy",
+"AssetPatchSettings",
+"AssetService",
+"Atmosphere",
+"AtmosphereSensor",
+"Attachment",
+"AudioAnalyzer",
+"AudioChannelMixer",
+"AudioChannelSplitter",
+"AudioChorus",
+"AudioCompressor",
+"AudioDeviceInput",
+"AudioDeviceOutput",
+"AudioDistortion",
+"AudioEcho",
+"AudioEmitter",
+"AudioEqualizer",
+"AudioFader",
+"AudioFilter",
+"AudioFlanger",
+"AudioGate",
+"AudioLimiter",
+"AudioListener",
+"AudioPages",
+"AudioPitchShifter",
+"AudioPlayer",
+"AudioRecorder",
+"AudioReverb",
+"AudioSearchParams",
+"AudioSpeechToText",
+"AudioTextToSpeech",
+"AudioTremolo",
+"AvatarCreationService",
+"AvatarEditorService",
+"Backpack",
+"BackpackItem",
+"BadgeService",
+"BallSocketConstraint",
+"BanHistoryPages",
+"BasePart",
+"BasePlayerGui",
+"BaseRemoteEvent",
+"BaseScript",
+"BaseWrap",
+"Beam",
+"BevelMesh",
+"BillboardGui",
+"BinaryStringValue",
+"BindableEvent",
+"BindableFunction",
+"BlockMesh",
+"BloomEffect",
+"BlurEffect",
+"BodyAngularVelocity",
+"BodyColors",
+"BodyForce",
+"BodyGyro",
+"BodyMover",
+"BodyPartDescription",
+"BodyPosition",
+"BodyThrust",
+"BodyVelocity",
+"Bone",
+"BoolValue",
+"BoxHandleAdornment",
+"BrickColorValue",
+"BrowserService",
+"BubbleChatConfiguration",
+"BubbleChatMessageProperties",
+"BuoyancySensor",
+"CFrameValue",
+"CacheableContentProvider",
+"Camera",
+"CanvasGroup",
+"Capture",
+"CaptureService",
+"CapturesPages",
+"CatalogPages",
+"ChangeHistoryService",
+"ChannelTabsConfiguration",
+"CharacterAppearance",
+"CharacterMesh",
+"Chat",
+"ChatInputBarConfiguration",
+"ChatWindowConfiguration",
+"ChatWindowMessageProperties",
+"ChorusSoundEffect",
+"ClickDetector",
+"ClientReplicator",
+"ClimbController",
+"Clothing",
+"Clouds",
+"ClusterPacketCache",
+"CollectionService",
+"Color3Value",
+"ColorCorrectionEffect",
+"ColorGradingEffect",
+"CommerceService",
+"CompositeValueCurve",
+"CompressorSoundEffect",
+"ConeHandleAdornment",
+"ConfigService",
+"ConfigSnapshot",
+"Configuration",
+"ConfigureServerService",
+"Constraint",
+"ContentProvider",
+"ContextActionService",
+"Controller",
+"ControllerBase",
+"ControllerManager",
+"ControllerPartSensor",
+"ControllerSensor",
+"ControllerService",
+"CookiesService",
+"CoreGui",
+"CoreScriptDebuggingManagerHelper",
+"CornerWedgePart",
+"CreatorStoreService",
+"CurveAnimation",
+"CustomEvent",
+"CustomEventReceiver",
+"CustomLog",
+"CylinderHandleAdornment",
+"CylinderMesh",
+"CylindricalConstraint",
+"DataModel",
+"DataModelMesh",
+"DataModelSession",
+"DataStore",
+"DataStoreGetOptions",
+"DataStoreIncrementOptions",
+"DataStoreInfo",
+"DataStoreKey",
+"DataStoreKeyInfo",
+"DataStoreKeyPages",
+"DataStoreListingPages",
+"DataStoreObjectVersionInfo",
+"DataStoreOptions",
+"DataStorePages",
+"DataStoreService",
+"DataStoreSetOptions",
+"DataStoreVersionPages",
+"Debris",
+"DebugSettings",
+"Decal",
+"DepthOfFieldEffect",
+"Dialog",
+"DialogChoice",
+"DistortionSoundEffect",
+"DockWidgetPluginGui",
+"DoubleConstrainedValue",
+"DraftsService",
+"DragDetector",
+"Dragger",
+"DraggerService",
+"DynamicRotate",
+"EchoSoundEffect",
+"EditableImage",
+"EditableMesh",
+"EmotesPages",
+"EncodingService",
+"EqualizerSoundEffect",
+"EulerRotationCurve",
+"ExperienceInviteOptions",
+"ExperienceNotificationService",
+"Explosion",
+"FaceControls",
+"FaceInstance",
+"Feature",
+"FeatureRestrictionManager",
+"File",
+"FileMesh",
+"Fire",
+"Flag",
+"FlagStand",
+"FlagStandService",
+"FlangeSoundEffect",
+"FloatCurve",
+"FloorWire",
+"FluidForceSensor",
+"Folder",
+"ForceField",
+"FormFactorPart",
+"Frame",
+"FriendPages",
+"FriendService",
+"FunctionalTest",
+"GamePassService",
+"GameSettings",
+"GamepadService",
+"GenerationService",
+"GenericChallengeService",
+"GenericSettings",
+"Geometry",
+"GeometryService",
+"GetTextBoundsParams",
+"GlobalDataStore",
+"GlobalSettings",
+"Glue",
+"GroundController",
+"GroupService",
+"GuiBase",
+"GuiBase2d",
+"GuiBase3d",
+"GuiButton",
+"GuiLabel",
+"GuiMain",
+"GuiObject",
+"GuiService",
+"GuidRegistryService",
+"HSRDataContentProvider",
+"HandRigDescription",
+"HandleAdornment",
+"Handles",
+"HandlesBase",
+"HapticEffect",
+"HapticService",
+"Hat",
+"HeapProfilerService",
+"HeightmapImporterService",
+"HiddenSurfaceRemovalAsset",
+"Highlight",
+"HingeConstraint",
+"Hint",
+"Hole",
+"Hopper",
+"HopperBin",
+"HttpRbxApiService",
+"HttpService",
+"Humanoid",
+"HumanoidController",
+"HumanoidDescription",
+"HumanoidRigDescription",
+"IKControl",
+"ILegacyStudioBridge",
+"ImageButton",
+"ImageHandleAdornment",
+"ImageLabel",
+"IncrementalPatchBuilder",
+"InputAction",
+"InputBinding",
+"InputContext",
+"InputObject",
+"InsertService",
+"Instance",
+"InstanceAdornment",
+"InstanceFileSyncService",
+"IntConstrainedValue",
+"IntValue",
+"IntersectOperation",
+"InventoryPages",
+"JointInstance",
+"JointsService",
+"KeyboardService",
+"Keyframe",
+"KeyframeMarker",
+"KeyframeSequence",
+"KeyframeSequenceProvider",
+"LayerCollector",
+"Light",
+"Lighting",
+"LineForce",
+"LineHandleAdornment",
+"LinearVelocity",
+"LocalScript",
+"LocalizationService",
+"LocalizationTable",
+"LogService",
+"LoginService",
+"LuaSettings",
+"LuaSourceContainer",
+"LuaWebService",
+"MLService",
+"MLSession",
+"ManualGlue",
+"ManualSurfaceJointInstance",
+"ManualWeld",
+"MarkerCurve",
+"MarketplaceService",
+"MatchmakingService",
+"MaterialService",
+"MaterialVariant",
+"MemStorageConnection",
+"MemStorageService",
+"MemoryStoreHashMap",
+"MemoryStoreHashMapPages",
+"MemoryStoreQueue",
+"MemoryStoreService",
+"MemoryStoreSortedMap",
+"MeshContentProvider",
+"MeshPart",
+"Message",
+"MessagingService",
+"MicroProfilerService",
+"Model",
+"ModerationService",
+"ModuleScript",
+"Motor",
+"Motor6D",
+"MotorFeature",
+"Mouse",
+"MouseService",
+"MultipleDocumentInterfaceInstance",
+"NegateOperation",
+"NetworkClient",
+"NetworkMarker",
+"NetworkPeer",
+"NetworkReplicator",
+"NetworkServer",
+"NetworkSettings",
+"NoCollisionConstraint",
+"NotificationService",
+"NumberPose",
+"NumberValue",
+"Object",
+"ObjectValue",
+"OpenCloudApiV1",
+"OpenCloudService",
+"OrderedDataStore",
+"OutfitPages",
+"PVAdornment",
+"PVInstance",
+"PackageLink",
+"PackageService",
+"Pages",
+"Pants",
+"Part",
+"PartAdornment",
+"PartOperation",
+"PartOperationAsset",
+"ParticleEmitter",
+"PatchBundlerFileWatch",
+"PatchMapping",
+"Path",
+"Path2D",
+"PathfindingLink",
+"PathfindingModifier",
+"PathfindingService",
+"PermissionsService",
+"PhysicsService",
+"PhysicsSettings",
+"PitchShiftSoundEffect",
+"PlacesService",
+"Plane",
+"PlaneConstraint",
+"Platform",
+"Player",
+"PlayerGui",
+"PlayerMouse",
+"PlayerScripts",
+"PlayerViewService",
+"Players",
+"Plugin",
+"PluginAction",
+"PluginCapabilities",
+"PluginDebugService",
+"PluginDragEvent",
+"PluginGui",
+"PluginGuiService",
+"PluginManagementService",
+"PluginManager",
+"PluginManagerInterface",
+"PluginMenu",
+"PluginMouse",
+"PluginToolbar",
+"PluginToolbarButton",
+"PointLight",
+"PointsService",
+"PolicyService",
+"Pose",
+"PoseBase",
+"PostEffect",
+"PrismaticConstraint",
+"ProcessInstancePhysicsService",
+"ProximityPrompt",
+"ProximityPromptService",
+"PublishService",
+"PyramidHandleAdornment",
+"QWidgetPluginGui",
+"RayValue",
+"RecommendationPages",
+"RecommendationService",
+"ReflectionMetadata",
+"ReflectionMetadataCallbacks",
+"ReflectionMetadataClass",
+"ReflectionMetadataClasses",
+"ReflectionMetadataEnum",
+"ReflectionMetadataEnumItem",
+"ReflectionMetadataEnums",
+"ReflectionMetadataEvents",
+"ReflectionMetadataFunctions",
+"ReflectionMetadataItem",
+"ReflectionMetadataMember",
+"ReflectionMetadataProperties",
+"ReflectionMetadataYieldFunctions",
+"ReflectionService",
+"RemoteDebuggerServer",
+"RemoteEvent",
+"RemoteFunction",
+"RenderSettings",
+"RenderingTest",
+"ReplicatedFirst",
+"ReplicatedStorage",
+"ReverbSoundEffect",
+"RigidConstraint",
+"RocketPropulsion",
+"RodConstraint",
+"RopeConstraint",
+"Rotate",
+"RotateP",
+"RotateV",
+"RotationCurve",
+"RunService",
+"RunningAverageItemDouble",
+"RunningAverageItemInt",
+"RunningAverageTimeIntervalItem",
+"ScreenGui",
+"ScreenshotCapture",
+"ScreenshotHud",
+"Script",
+"ScriptBuilder",
+"ScriptContext",
+"ScriptDocument",
+"ScriptEditorService",
+"ScriptProfilerService",
+"ScriptService",
+"ScrollingFrame",
+"Seat",
+"Selection",
+"SelectionBox",
+"SelectionHighlightManager",
+"SelectionLasso",
+"SelectionPartLasso",
+"SelectionPointLasso",
+"SelectionSphere",
+"SensorBase",
+"SerializationService",
+"ServerReplicator",
+"ServerScriptService",
+"ServerStorage",
+"ServiceProvider",
+"ServiceVisibilityService",
+"SessionCheckService",
+"SharedTableRegistry",
+"Shirt",
+"ShirtGraphic",
+"SkateboardController",
+"SkateboardPlatform",
+"Skin",
+"Sky",
+"SlidingBallConstraint",
+"SlimContentProvider",
+"Smoke",
+"SmoothVoxelsUpgraderService",
+"Snap",
+"SocialService",
+"SolidModelContentProvider",
+"Sound",
+"SoundEffect",
+"SoundGroup",
+"SoundService",
+"Sparkles",
+"SpawnLocation",
+"SpawnerService",
+"SpecialMesh",
+"SphereHandleAdornment",
+"SpotLight",
+"SpringConstraint",
+"StandalonePluginScripts",
+"StandardPages",
+"StarterCharacterScripts",
+"StarterGear",
+"StarterGui",
+"StarterPack",
+"StarterPlayer",
+"StarterPlayerScripts",
+"StartupMessageService",
+"Stats",
+"StatsItem",
+"Status",
+"StopWatchReporter",
+"StringValue",
+"Studio",
+"StudioService",
+"StudioTestService",
+"StudioTheme",
+"StyleBase",
+"StyleDerive",
+"StyleLink",
+"StyleRule",
+"StyleSheet",
+"SunRaysEffect",
+"SurfaceAppearance",
+"SurfaceGui",
+"SurfaceGuiBase",
+"SurfaceLight",
+"SurfaceSelection",
+"SwimController",
+"SyncScriptBuilder",
+"TaskScheduler",
+"Team",
+"TeamCreateData",
+"TeamCreateService",
+"Teams",
+"TeleportAsyncResult",
+"TeleportOptions",
+"TeleportService",
+"Terrain",
+"TerrainDetail",
+"TerrainIterateOperation",
+"TerrainModifyOperation",
+"TerrainReadOperation",
+"TerrainRegion",
+"TerrainWriteOperation",
+"TestService",
+"TextBox",
+"TextBoxService",
+"TextButton",
+"TextChannel",
+"TextChatCommand",
+"TextChatConfigurations",
+"TextChatMessage",
+"TextChatMessageProperties",
+"TextChatService",
+"TextFilterResult",
+"TextFilterTranslatedResult",
+"TextGenerator",
+"TextLabel",
+"TextService",
+"TextSource",
+"Texture",
+"TimerService",
+"Tool",
+"Torque",
+"TorsionSpringConstraint",
+"TotalCountTimeIntervalItem",
+"TouchInputService",
+"TouchTransmitter",
+"Trail",
+"Translator",
+"TremoloSoundEffect",
+"TriangleMeshPart",
+"TrussPart",
+"Tween",
+"TweenBase",
+"TweenService",
+"UGCValidationService",
+"UIAspectRatioConstraint",
+"UIBase",
+"UIComponent",
+"UIConstraint",
+"UICorner",
+"UIDragDetector",
+"UIFlexItem",
+"UIGradient",
+"UIGridLayout",
+"UIGridStyleLayout",
+"UILayout",
+"UIListLayout",
+"UIPadding",
+"UIPageLayout",
+"UIScale",
+"UISizeConstraint",
+"UIStroke",
+"UITableLayout",
+"UITextSizeConstraint",
+"UnionOperation",
+"UniversalConstraint",
+"UnreliableRemoteEvent",
+"UserGameSettings",
+"UserInputService",
+"UserService",
+"UserSettings",
+"VRService",
+"VRStatusService",
+"ValueBase",
+"ValueCurve",
+"Vector3Curve",
+"Vector3Value",
+"VectorForce",
+"VehicleController",
+"VehicleSeat",
+"VelocityMotor",
+"VideoCapture",
+"VideoCaptureService",
+"VideoDisplay",
+"VideoFrame",
+"VideoPlayer",
+"VideoSampler",
+"VideoService",
+"ViewportFrame",
+"VirtualInputManager",
+"VirtualUser",
+"VisibilityCheckDispatcher",
+"Visit",
+"VisualizationMode",
+"VisualizationModeCategory",
+"VisualizationModeService",
+"VoiceChatService",
+"WebStreamClient",
+"WedgePart",
+"Weld",
+"WeldConstraint",
+"Wire",
+"WireframeHandleAdornment",
+"Workspace",
+"WorkspaceAnnotation",
+"WorldModel",
+"WorldRoot",
+"WrapDeformer",
+"WrapLayer",
+"WrapTarget",
+"WrapTextureTransfer",
+}
+
+local classes = {}
+
+for _, name in ipairs(classList) do
+    classes[name] = true
+end
+
+local enumList = {
+"AccessModifierType",
+"AccessoryType",
+"ActionOnAutoResumeSync",
+"ActionOnStopSync",
+"ActionType",
+"ActuatorRelativeTo",
+"ActuatorType",
+"AdAvailabilityResult",
+"AdEventType",
+"AdFormat",
+"AdShape",
+"AdTeleportMethod",
+"AdUIEventType",
+"AdUIType",
+"AdUnitStatus",
+"AdornCullingMode",
+"AlignType",
+"AlphaMode",
+"AnalyticsCustomFieldKeys",
+"AnalyticsEconomyAction",
+"AnalyticsEconomyFlowType",
+"AnalyticsEconomyTransactionType",
+"AnalyticsLogLevel",
+"AnalyticsProgressionStatus",
+"AnalyticsProgressionType",
+"AnimationClipFromVideoStatus",
+"AnimationPriority",
+"AnimatorRetargetingMode",
+"AnnotationEditingMode",
+"AnnotationRequestStatus",
+"AnnotationRequestType",
+"AppLifecycleManagerState",
+"AppShellActionType",
+"AppShellFeature",
+"AppUpdateStatus",
+"ApplyStrokeMode",
+"AspectType",
+"AssetCreatorType",
+"AssetFetchStatus",
+"AssetType",
+"AssetTypeVerification",
+"AudioApiRollout",
+"AudioCaptureMode",
+"AudioChannelLayout",
+"AudioFilterType",
+"AudioSimulationFidelity",
+"AudioSubType",
+"AudioWindowSize",
+"AuthorityMode",
+"AutoIndentRule",
+"AutomaticSize",
+"AvatarAssetType",
+"AvatarChatServiceFeature",
+"AvatarContextMenuOption",
+"AvatarItemType",
+"AvatarPromptResult",
+"AvatarSettingsAccessoryLimitMethod",
+"AvatarSettingsAccessoryMode",
+"AvatarSettingsAnimationClipsMode",
+"AvatarSettingsAnimationPacksMode",
+"AvatarSettingsAppearanceMode",
+"AvatarSettingsBuildMode",
+"AvatarSettingsClothingMode",
+"AvatarSettingsCollisionMode",
+"AvatarSettingsCustomAccessoryMode",
+"AvatarSettingsCustomBodyType",
+"AvatarSettingsCustomClothingMode",
+"AvatarSettingsHitAndTouchDetectionMode",
+"AvatarSettingsJumpMode",
+"AvatarSettingsLegacyCollisionMode",
+"AvatarSettingsScaleMode",
+"AvatarThumbnailCustomizationType",
+"AvatarUnificationMode",
+"Axis",
+"BenefitType",
+"BinType",
+"BodyPart",
+"BodyPartR15",
+"BorderMode",
+"BorderStrokePosition",
+"BreakReason",
+"BreakpointRemoveReason",
+"BulkMoveMode",
+"BundleType",
+"Button",
+"ButtonStyle",
+"CageType",
+"CameraMode",
+"CameraPanMode",
+"CameraSpeedAdjustBinding",
+"CameraType",
+"CaptureGalleryPermission",
+"CaptureType",
+"CatalogCategoryFilter",
+"CatalogSortAggregation",
+"CatalogSortType",
+"CellBlock",
+"CellMaterial",
+"CellOrientation",
+"CenterDialogType",
+"CharacterControlMode",
+"ChatCallbackType",
+"ChatColor",
+"ChatMode",
+"ChatPrivacyMode",
+"ChatRestrictionStatus",
+"ChatStyle",
+"ChatVersion",
+"ClientAnimatorThrottlingMode",
+"CloseReason",
+"CollaboratorStatus",
+"CollisionFidelity",
+"CommandPermission",
+"CompileTarget",
+"CompletionAcceptanceBehavior",
+"CompletionItemKind",
+"CompletionItemTag",
+"CompletionTriggerKind",
+"CompositeValueCurveType",
+"CompressionAlgorithm",
+"ComputerCameraMovementMode",
+"ComputerMovementMode",
+"ConfigSnapshotErrorState",
+"ConnectionError",
+"ConnectionState",
+"ContentSourceType",
+"ContextActionPriority",
+"ContextActionResult",
+"ControlMode",
+"CoreGuiType",
+"CreateAssetResult",
+"CreateOutfitFailure",
+"CreatorType",
+"CreatorTypeFilter",
+"CurrencyType",
+"CustomCameraMode",
+"DataStoreRequestType",
+"DebuggerEndReason",
+"DebuggerExceptionBreakMode",
+"DebuggerFrameType",
+"DebuggerPauseReason",
+"DebuggerStatus",
+"DevCameraOcclusionMode",
+"DevComputerCameraMovementMode",
+"DevComputerMovementMode",
+"DevTouchCameraMovementMode",
+"DevTouchMovementMode",
+"DeveloperMemoryTag",
+"DeviceFeatureType",
+"DeviceForm",
+"DeviceLevel",
+"DeviceType",
+"DialogBehaviorType",
+"DialogPurpose",
+"DialogTone",
+"DisplaySize",
+"DominantAxis",
+"DraftStatusCode",
+"DragDetectorDragStyle",
+"DragDetectorPermissionPolicy",
+"DragDetectorResponseStyle",
+"DraggerCoordinateSpace",
+"DraggerMovementMode",
+"DraggingScrollBar",
+"EasingDirection",
+"EasingStyle",
+"ElasticBehavior",
+"EnviromentalPhysicsThrottle",
+"ExperienceAuthScope",
+"ExperienceEventStatus",
+"ExplosionType",
+"FACSDataLod",
+"FacialAgeEstimationResultType",
+"FacialAnimationStreamingState",
+"FacsActionUnit",
+"FieldOfViewMode",
+"FillDirection",
+"FilterErrorType",
+"FilterResult",
+"FinishRecordingOperation",
+"FluidFidelity",
+"FluidForces",
+"Font",
+"FontSize",
+"FontStyle",
+"FontWeight",
+"ForceLimitMode",
+"FormFactor",
+"FrameStyle",
+"FramerateManagerMode",
+"FriendRequestEvent",
+"FriendStatus",
+"FunctionalTestResult",
+"GameAvatarType",
+"GamepadType",
+"GearGenreSetting",
+"GearType",
+"Genre",
+"GraphicsMode",
+"GraphicsOptimizationMode",
+"GroupMembershipStatus",
+"GuiState",
+"GuiType",
+"HandlesStyle",
+"HapticEffectType",
+"HashAlgorithm",
+"HighlightDepthMode",
+"HorizontalAlignment",
+"HoverAnimateSpeed",
+"HttpCachePolicy",
+"HttpCompression",
+"HttpContentType",
+"HttpError",
+"HttpRequestType",
+"HumanoidCollisionType",
+"HumanoidDisplayDistanceType",
+"HumanoidHealthDisplayType",
+"HumanoidRigType",
+"HumanoidStateType",
+"IKCollisionsMode",
+"IKControlConstraintSupport",
+"IKControlType",
+"IXPLoadingStatus",
+"ImageAlphaType",
+"ImageCombineType",
+"InOut",
+"InfoType",
+"InitialDockState",
+"InputActionType",
+"InputType",
+"InstanceFileSyncStatus",
+"IntermediateMeshGenerationResult",
+"InterpolationThrottlingMode",
+"InviteState",
+"ItemLineAlignment",
+"Language",
+"LeftRight",
+"LexemeType",
+"LightingStyle",
+"Limb",
+"LineJoinMode",
+"ListDisplayMode",
+"ListenerLocation",
+"ListenerType",
+"LiveEditingAtomicUpdateResponse",
+"LiveEditingBroadcastMessageType",
+"LoadCharacterLayeredClothing",
+"LoadDynamicHeads",
+"LocationType",
+"LuauTypeCheckMode",
+"MarketplaceBulkPurchasePromptStatus",
+"MarketplaceItemPurchaseStatus",
+"MarketplaceProductType",
+"MarkupKind",
+"MatchmakingType",
+"Material",
+"MaterialPattern",
+"MembershipType",
+"MeshPartDetailLevel",
+"MeshPartHeadsAndAccessories",
+"MeshScaleUnit",
+"MeshType",
+"MessageType",
+"ModelLevelOfDetail",
+"ModelStreamingBehavior",
+"ModelStreamingMode",
+"ModerationStatus",
+"ModifierKey",
+"MouseBehavior",
+"MoveState",
+"MoverConstraintRootBehaviorMode",
+"MuteState",
+"NameOcclusion",
+"NegateOperationHiddenHistory",
+"NetworkOwnership",
+"NetworkStatus",
+"NoiseType",
+"NormalId",
+"NotificationButtonType",
+"OperationType",
+"OrientationAlignmentMode",
+"OutfitSource",
+"OutfitType",
+"OutputLayoutMode",
+"OverrideMouseIconBehavior",
+"PackagePermission",
+"PartType",
+"ParticleEmitterShape",
+"ParticleEmitterShapeInOut",
+"ParticleEmitterShapeStyle",
+"ParticleFlipbookLayout",
+"ParticleFlipbookMode",
+"ParticleFlipbookTextureCompatible",
+"ParticleOrientation",
+"PathStatus",
+"PathWaypointAction",
+"PathfindingUseImprovedSearch",
+"PermissionLevelShown",
+"PhysicsSimulationRate",
+"PhysicsSteppingMethod",
+"Platform",
+"PlaybackState",
+"PlayerActions",
+"PlayerCharacterDestroyBehavior",
+"PlayerChatType",
+"PlayerDataErrorState",
+"PlayerDataLoadFailureBehavior",
+"PlayerExitReason",
+"PoseEasingDirection",
+"PoseEasingStyle",
+"PositionAlignmentMode",
+"PredictionMode",
+"PredictionStatus",
+"PreferredInput",
+"PreferredTextSize",
+"PrimalPhysicsSolver",
+"PrimitiveType",
+"PrivilegeType",
+"ProductLocationRestriction",
+"ProductPurchaseChannel",
+"ProductPurchaseDecision",
+"PromptCreateAssetResult",
+"PromptCreateAvatarResult",
+"PromptPublishAssetResult",
+"PropertyStatus",
+"ProximityPromptExclusivity",
+"ProximityPromptInputType",
+"ProximityPromptStyle",
+"QualityLevel",
+"R15CollisionType",
+"RaycastFilterType",
+"ReadCapturesFromGalleryResult",
+"RecommendationActionType",
+"RecommendationDepartureIntent",
+"RecommendationImpressionType",
+"RecommendationItemContentType",
+"RecommendationItemVisibility",
+"RejectCharacterDeletions",
+"RenderFidelity",
+"RenderPriority",
+"RenderingCacheOptimizationMode",
+"RenderingTestComparisonMethod",
+"ReplicateInstanceDestroySetting",
+"ResamplerMode",
+"ReservedHighlightId",
+"RestPose",
+"ReturnKeyType",
+"ReverbType",
+"RibbonTool",
+"RigScale",
+"RigType",
+"RollOffMode",
+"RolloutState",
+"RotationOrder",
+"RotationType",
+"RsvpStatus",
+"RtlTextSupport",
+"RunContext",
+"RunState",
+"RuntimeUndoBehavior",
+"SafeAreaCompatibility",
+"SalesTypeFilter",
+"SandboxedInstanceMode",
+"SaveAvatarThumbnailCustomizationFailure",
+"SaveFilter",
+"SavedQualitySetting",
+"ScaleType",
+"ScopeCheckResult",
+"ScreenInsets",
+"ScreenOrientation",
+"ScrollBarInset",
+"ScrollingDirection",
+"SecurityCapability",
+"SelectionBehavior",
+"SelectionRenderMode",
+"SelfViewPosition",
+"SensorMode",
+"SensorUpdateType",
+"ServerLiveEditingMode",
+"ServiceVisibility",
+"Severity",
+"ShowAdResult",
+"SignalBehavior",
+"SizeConstraint",
+"SolverConvergenceMetricType",
+"SolverConvergenceVisualizationMode",
+"SortDirection",
+"SortOrder",
+"SpecialKey",
+"StartCorner",
+"StateObjectFieldType",
+"Status",
+"StepFrequency",
+"StreamOutBehavior",
+"StreamingIntegrityMode",
+"StreamingPauseMode",
+"StrokeSizingMode",
+"StudioCloseMode",
+"StudioDataModelType",
+"StudioPlaceUpdateFailureReason",
+"StudioScriptEditorColorCategories",
+"StudioScriptEditorColorPresets",
+"StudioStyleGuideColor",
+"StudioStyleGuideModifier",
+"Style",
+"SubscriptionExpirationReason",
+"SubscriptionPaymentStatus",
+"SubscriptionPeriod",
+"SubscriptionState",
+"SurfaceConstraint",
+"SurfaceGuiShape",
+"SurfaceGuiSizingMode",
+"SurfaceType",
+"SwipeDirection",
+"SystemThemeValue",
+"TableMajorAxis",
+"TeamCreateErrorState",
+"Technology",
+"TeleportMethod",
+"TeleportResult",
+"TeleportState",
+"TeleportType",
+"TerrainAcquisitionMethod",
+"TerrainFace",
+"TextChatMessageStatus",
+"TextDirection",
+"TextFilterContext",
+"TextInputType",
+"TextTruncate",
+"TextXAlignment",
+"TextYAlignment",
+"TextureMode",
+"TextureQueryType",
+"ThreadPoolConfig",
+"ThrottlingPriority",
+"ThumbnailSize",
+"ThumbnailType",
+"TickCountSampleMethod",
+"TonemapperPreset",
+"TopBottom",
+"TouchCameraMovementMode",
+"TouchMovementMode",
+"TrackerError",
+"TrackerExtrapolationFlagMode",
+"TrackerFaceTrackingStatus",
+"TrackerLodFlagMode",
+"TrackerLodValueMode",
+"TrackerMode",
+"TrackerPromptEvent",
+"TrackerType",
+"TriStateBoolean",
+"TweenStatus",
+"UICaptureMode",
+"UIDragDetectorBoundingBehavior",
+"UIDragDetectorDragRelativity",
+"UIDragDetectorDragSpace",
+"UIDragDetectorDragStyle",
+"UIDragDetectorResponseStyle",
+"UIDragSpeedAxisMapping",
+"UIFlexAlignment",
+"UIFlexMode",
+"UITheme",
+"UiMessageType",
+"UploadCaptureResult",
+"UsageContext",
+"UserCFrame",
+"UserInputState",
+"UserInputType",
+"VRComfortSetting",
+"VRControllerModelMode",
+"VRDeviceType",
+"VRLaserPointerMode",
+"VRSafetyBubbleMode",
+"VRScaling",
+"VRSessionState",
+"VRTouchpad",
+"VRTouchpadMode",
+"VelocityConstraintMode",
+"VerticalAlignment",
+"VerticalScrollBarPosition",
+"VibrationMotor",
+"VideoCaptureResult",
+"VideoCaptureStartedResult",
+"VideoDeviceCaptureQuality",
+"VideoError",
+"VideoSampleSize",
+"ViewMode",
+"VirtualCursorMode",
+"VirtualInputMode",
+"VoiceChatDistanceAttenuationType",
+"VoiceChatState",
+"VoiceControlPath",
+"VolumetricAudio",
+"WaterDirection",
+"WaterForce",
+"WebSocketState",
+"WebStreamClientState",
+"WebStreamClientType",
+"WeldConstraintPreserve",
+"WhisperChatPrivacyMode",
+"WrapLayerAutoSkin",
+"WrapLayerDebugMode",
+"WrapTargetDebugMode",
+"ZIndexBehavior",
+"Data",
+"Settings",
+"fromURL",
+"fromPath",
+"ServerSide",
+"ServerRun",
+"ServerExecute",
+}
+
+local enums = {}
+
+for _, name in ipairs(enumList) do
+	enums[name] = true
+end
+
+local exeList = {
+["cache.invalidate"]=true,
+["cache.iscached"]=true,
+["cache.replace"]=true,
+["cloneref"]=true,
+["compareinstances"]=true,
+["base64_encode"]=true,
+["base64_decode"]=true,
+["debug.getconstant"]=true,
+["debug.getconstants"]=true,
+["debug.getinfo"]=true,
+["debug.getproto"]=true,
+["debug.getprotos"]=true,
+["debug.getupvalue"]=true,
+["debug.getupvalues"]=true,
+["debug.setconstant"]=true,
+["getgc"]=true,
+["getloadedmodules"]=true,
+["getrunningscripts"]=true,
+["getscripts"]=true,
+["getsenv"]=true,
+["hookmetamethod"]=true,
+["iscclosure"]=true,
+["isexecutorclosure"]=true,
+["islclosure"]=true,
+["newcclosure"]=true,
+["setreadonly"]=true,
+["lz4compress"]=true,
+["lz4decompress"]=true,
+["getscriptclosure"]=true,
+["request"]=true,
+["getcallbackvalue"]=true,
+["listfiles"]=true,
+["writefile"]=true,
+["isfolder"]=true,
+["makefolder"]=true,
+["appendfile"]=true,
+["isfile"]=true,
+["delfolder"]=true,
+["delfile"]=true,
+["loadfile"]=true,
+["gethui"]=true,
+["getrawmetatable"]=true,
+["isreadonly"]=true,
+["getnamecallmethod"]=true,
+["setscriptable"]=true,
+["isscriptable"]=true,
+["getinstances"]=true,
+["getnilinstances"]=true,
+["fireproximityprompt"]=true,
+["setrawmetatable"]=true,
+["getthreadidentity"]=true,
+["setthreadidentity"]=true,
+["getrenderproperty"]=true,
+["setrenderproperty"]=true,
+["Drawing.new"]=true,
+["Drawing.Fonts"]=true,
+["cleardrawcache"]=true,
+["loadstring"]=true,
+["debug.setupvalue"]=true,
+["readfile"]=true,
+["getscriptbytecode"]=true,
+["getcallingscript"]=true,
+["isrenderobj"]=true,
+["firesignal"]=true,
+["getscripthash"]=true,
+["identifyexecutor"]=true,
+["getfunctionhash"]=true,
+["gethiddenproperty"]=true,
+["debug.getstack"]=true,
+["firetouchinterest"]=true,
+["filtergc"]=true,
+["getrenv"]=true,
+["crypt.decrypt"]=true,
+["crypt.generatebytes"]=true,
+["crypt.generatekey"]=true,
+["getconnections"]=true,
+["checkcaller"]=true,
+["crypt.encrypt"]=true,
+["fireclickdetector"]=true,
+["debug.setstack"]=true,
+["decompile"]=true,
+["hookfunction"]=true,
+["restorefunction"]=true,
+["clonefunction"]=true,
+["getgenv"]=true,
+["getcustomasset"]=true,
+["sethiddenproperty"]=true,
+["WebSocket.connect"]=true,
+["replicatesignal"]=true,
+["crypt.hash"]=true,
+["getLoad"]=true,
+}
+------------------------------------------------------------
+local cooldown = false
+local detected = false
+
+editb:GetPropertyChangedSignal("Text"):Connect(function()
+	local found = editb.Text:match("%f[%w]getLoad%f[%W]") or editb.Text:match("%f[%w]Data%f[%W]") or editb.Text:match("%f[%w]Settings%f[%W]") or editb.Text:match("%f[%w]fromURL%f[%W]") or editb.Text:match("%f[%w]fromPath%f[%W]") or editb.Text:match("%f[%w]ServerSide%f[%W]") or editb.Text:match("%f[%w]ServerRun%f[%W]") or editb.Text:match("%f[%w]ServerExecute%f[%W]")
+
+	if found and not detected and not cooldown then
+		detected = true
+		cooldown = true
+		
+		noti(10, "these syntax that you typed is not made by official sUNC, so it only can use for the ExperienceSettings.", color.yellow)
+
+		task.delay(20,function()
+			cooldown = false
+		end)
+
+	elseif not found then
+		detected = false
+	end
+end)
+------------------------------------------------------------
+-- Escape FIRST
+local function escape(text)
+	return text
+		:gsub("&","&amp;")
+  	:gsub("<","&lt;")
+		:gsub(">","&gt;")
+end
+
+local function highlightLine(raw)
+
+	local safe = escape(raw)
+
+	-- protect escaped entities temporarily
+	local entities = {}
+	safe = safe:gsub("&[%a]+;", function(ent)
+		table.insert(entities, ent)
+		return "\0"..#entities.."\0"
+	end)
+
+	-- highlight comments
+	safe = safe:gsub("%-%-.*", function(c)
+		return '<font color="'..COLORS.Comment..'">'..c..'</font>'
+	end)
+
+	-- highlight strings
+	safe = safe:gsub('"(.-)"', function(str)
+		return '<font color="'..COLORS.String..'">"'..str..'"</font>'
+	end)
+
+	safe = safe:gsub("'(.-)'", function(str)
+		return '<font color="'..COLORS.String..'">\''..str..'\'</font>'
+	end)
+
+-- highlight identifiers
+safe = safe:gsub("(%f[%w_](%a[%w_]*)%f[^%w_])", function(full, word)
+
+    if keywords[word] then
+        return '<font color="'..COLORS.Keyword..'">'..word..'</font>'
+
+    elseif datatype[word] then
+        return '<font color="'..COLORS.Datatype..'">'..word..'</font>'
+
+    elseif globals[word] then
+        return '<font color="'..COLORS.Global..'">'..word..'</font>'
+
+    elseif classes[word] then
+        return '<font color="'..COLORS.Class..'">'..word..'</font>'
+    elseif enums[word] then
+      	return '<font color="'..COLORS.Enum..'">'..word..'</font>'
+    elseif exeList[word] then
+        return '<font color="'..COLORS.Exe..'">'..word..'</font>'
+    end
+
+    return word
+end)
+
+	-- restore entities
+	safe = safe:gsub("\0(%d+)\0", function(i)
+		return entities[tonumber(i)]
+	end)
+
+	return safe
+end
+
+local function isValidRichText(text)
+	local open = 0
+	
+	for tag in text:gmatch("<(/?font[^>]*)>") do
+		if tag:sub(1,1) == "/" then
+			open -= 1
+		else
+			open += 1
+		end
+		
+		if open < 0 then
+			return false
+		end
+	end
+	
+	return open == 0
+end
+
+
+--// SPLIT
+local function getLines(text)
+	local t = {}
+	for line in text:gmatch("([^\n]*)\n?") do
+		table.insert(t,line)
+	end
+	return t
+end
+
+--// RENDER
+local function render()
+
+	local lines = getLines(editBox.Text)
+	local total = #lines
+
+	scroll.CanvasSize = UDim2.new(1000, 0, 0, total * LINE_HEIGHT)
+
+	local first = math.floor(scroll.CanvasPosition.Y / LINE_HEIGHT) + 1
+	local last = math.min(first + VISIBLE_BUFFER, total)
+
+	local txt = {}
+	local nums = {}
+
+	for i = first,last do
+	
+  	local raw = lines[i] or ""
+  	local result = highlightLine(raw)
+
+    	if not isValidRichText(result) then
+  		result = escape(raw)
+  	end
+	
+   	table.insert(txt, result)
+  	table.insert(nums, i)
+  end
+
+	highlight.Text = table.concat(txt,"\n")
+	lineNumbers.Text = table.concat(nums,"\n")
+
+	local y = (first-1)*LINE_HEIGHT
+
+	highlight.Position = UDim2.new(0,50,0,y)
+	lineNumbers.Position = UDim2.new(0,0,0,y)
+
+	highlight.Size = UDim2.new(1,-50,0,(last-first+1)*LINE_HEIGHT)
+	lineNumbers.Size = UDim2.new(0,46,0,(last-first+1)*LINE_HEIGHT)
+end
+
+
+editBox:GetPropertyChangedSignal("Text"):Connect(render)
+scroll:GetPropertyChangedSignal("CanvasPosition"):Connect(render)
+
+render()
+
+--[ End of syntax script ]
+
+--[ Script new ]
+local stab = Instance.new("ScrollingFrame")
+stab.Name = "ScriptTabs"
+stab.Position = UDim2.new(0.51,0,0,0)
+stab.Size = UDim2.new(0.49,0,0.1,0)
+stab.BackgroundColor3 = Color3.new(1,1,1)
+stab.BackgroundTransparency = 0.5
+stab.CanvasSize = UDim2.new(100,0,0,0)
+stab.ScrollBarThickness = 2
+stab.ScrollingDirection = Enum.ScrollingDirection.X
+stab.Parent = Frame.Edit.Inside
+Corner(0.15,0,stab)
+Stroke(stab, ASMBorder, 255,255,255, LJMRound, 2, 0)
+Gradient(stab, 90,0,0,
+  Color3.fromRGB(0,0,255),
+  Color3.fromRGB(0,255,255)
+)
+
+local stabi = Instance.new("Frame")
+stabi.Name = "Inside"
+stabi.Position = UDim2.new(0,0,0.1,0)
+stabi.Size = UDim2.new(1,0,0.8,0)
+stabi.BackgroundTransparency = 1
+stabi.Active = false
+stabi.Parent = stab
+ListLayout(stabi, 0,5, HLeft, VCenter, SLayout, FillH)
+
+local function uia(parent, num)
+  local Ui = Instance.new("UIAspectRatioConstraint")
+  Ui.AspectRatio = num
+  Ui.Parent = parent
+end
+  
+local addbtn = Instance.new("ImageButton")
+addbtn.Name = "Z99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999_AddScript"
+addbtn.Size = UDim2.new(1,0,1,0)
+addbtn.BackgroundColor3 = Color3.new(0,0,0)
+addbtn.Image = "rbxassetid://115181877700997"
+addbtn.LayoutOrder = 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+addbtn.Parent = stabi
+uia(addbtn, 1)
+Corner(0.2,0,addbtn)
+Stroke(addbtn, ASMBorder, 255,255,255, LJMRound, 1, 0)
+
+--// ===============================
+--// PATH
+--// ===============================
+
+local Edits = game:GetService("CoreGui")["ExperienceSettings-Executor"]
+	.Main.Background.Windows.Edit.Inside.EditScroll
+	
+local Editb = Edits.Edit
+
+------------------------------------------------------------
+--------------------------------------------------
+-- CONFIG
+--------------------------------------------------
+
+ASSET_PATH = "ExperienceSettings-Executor/Assets"
+
+local assets = {
+	["7z"] = "https://i.postimg.cc/7LWyhTXQ/7z.png",
+	["apk"] = "https://i.postimg.cc/1tV1q5Yj/apk.png",
+	["auto-execute"] = "https://i.postimg.cc/wvRYmTbb/auto-execute.png",
+	["black-shade"] = "https://i.postimg.cc/wvRYmTbP/black-shade.png",
+	["blue-shade"] = "https://i.postimg.cc/QtKZTxnz/blue-shade.png",
+	["bookmark"] = "https://i.postimg.cc/yd3CZYbq/bookmark.png",
+	["cam"] = "https://i.postimg.cc/qR6H3M5V/cam.png",
+	["check-in"] = "https://i.postimg.cc/gJLbZkTW/check-in.png",
+	["check-out"] = "https://i.postimg.cc/k4RPbXpJ/check-out.png",
+	["console"] = "https://i.postimg.cc/C5yTHT3w/console.png",
+	["copy"] = "https://i.postimg.cc/HnGD4Dqp/copy.png",
+	["cross"] = "https://i.postimg.cc/ZnktFtGb/cross.png",
+	["cross-white"] = "https://i.postimg.cc/rs6XCXBF/cross-white.png",
+	["cyan-shade"] = "https://i.postimg.cc/fy4njnGk/cyan-shade.png",
+	["debug"] = "https://i.postimg.cc/x8rDyDwc/debug.png",
+	["down"] = "https://i.postimg.cc/4yCkbkDY/down.png",
+	["editor"] = "https://i.postimg.cc/rs6XCXBd/editor.png",
+	["erase"] = "https://i.postimg.cc/PJGszsgD/erase.png",
+	["error"] = "https://i.postimg.cc/x8rDyDwv/erorr.png",
+	["exe"] = "https://i.postimg.cc/9035t56t/exe.png",
+	["execute"] = "https://i.postimg.cc/rs6XCXBN/execute.png",
+	["file"] = "https://i.postimg.cc/Znrkwsmy/file.png",
+	["folder-"] = "https://i.postimg.cc/cCQqFkWt/folder.png",
+	["gray-shade"] = "https://i.postimg.cc/90G3Lg2Z/gray-shade.png",
+	["home"] = "https://i.postimg.cc/HnQG6vm4/home.png",
+	["info"] = "https://i.postimg.cc/C5jycr0G/info.png",
+	["ipa"] = "https://i.postimg.cc/VvjyKZwW/ipa.png",
+	["left"] = "https://i.postimg.cc/QCpLfYD0/left.png",
+	["left-arrow"] = "https://i.postimg.cc/j2zVM3Th/left-arrow.png",
+	["lua-file"] = "https://i.postimg.cc/Znrkwsmf/lua-file.png",
+	["orange-shade"] = "https://i.postimg.cc/BbxWm737/orange-shade.png",
+	["paste"] = "https://i.postimg.cc/ZnrkwsZk/paste.png",
+	["paste-and-execute"] = "https://i.postimg.cc/7hgvKt4c/paste-and-execute.png",
+	["pink-shade"] = "https://i.postimg.cc/FzjtTCm5/pink-shade.png",
+	["plus"] = "https://i.postimg.cc/mZMGZk9r/plus.png",
+	["plus-cyan"] = "https://i.postimg.cc/c1YN1C3x/plus-cyan.png",
+	["png"] = "https://i.postimg.cc/fWXhWydm/png.png",
+	["print"] = "https://i.postimg.cc/FFcQFzSS/print.png",
+	["red-shade"] = "https://i.postimg.cc/T2mX21bm/red-shade.png",
+	["right"] = "https://i.postimg.cc/pV8tVrjf/right.png",
+	["right-arrow"] = "https://i.postimg.cc/VsMcsvtC/right-arrow.png",
+	["scriptblox"] = "https://i.postimg.cc/dQdKQ3Cm/scriptblox-com.png",
+	["search"] = "https://i.postimg.cc/c1YN1C3m/seacrh.png",
+	["select"] = "https://i.postimg.cc/BZDGZbFC/select.png",
+	["settings"] = "https://i.postimg.cc/dtYchFRm/settings.png",
+	["unknown-file"] = "https://i.postimg.cc/VsMcsvt7/unknown-file.png",
+	["unknown-icon"] = "https://i.postimg.cc/65Xx8KV0/unknown-icon.png",
+	["up"] = "https://i.postimg.cc/X7b6rWKg/up.png",
+	["warn"] = "https://i.postimg.cc/m2sWP43d/warn.png",
+	["wearedevs"] = "https://i.postimg.cc/NfcvKt8P/wearedevs-net.png",
+	["white-ball"] = "https://i.postimg.cc/yYHCDKhG/white-ball.png",
+	["white-ball-fill"] = "https://i.postimg.cc/BQ0fj35V/white-ball-fill.png",
+	["white-shade"] = "https://i.postimg.cc/SNhbn4LB/white-shade.png",
+	["white-square"] = "https://i.postimg.cc/J4LCs8cM/white-square.png",
+	["yellow-shade"] = "https://i.postimg.cc/zXFZWQp9/yellow-shade.png",
+	["zip"] = "https://i.postimg.cc/ncGb7WTN/zip.png",
+	["folder"] = "https://i.postimg.cc/D0qVxphs/folder.png",
+	["music-note"] = "https://i.postimg.cc/rFLBM6hF/music-note.png",
+	["game-info"] = "https://i.postimg.cc/T1Bzsq22/game-info.png",
+	["autoexewhite"] = "https://i.postimg.cc/MH8fDV9V/autoexewhite.png",
+}
+
+-------------------------------------------------
+
+--------------------------------------------------
+-- VARIABLES
+--------------------------------------------------
+
+local loadingAssets = false
+local assetsLoaded = false
+local failedAssets = {}
+
+--------------------------------------------------
+-- ENUMS
+--------------------------------------------------
+
+Enums = {}
+
+Enums.Settings = {
+	DelExe = "DelExe",
+	ReloadExe = "ReloadExe"
+}
+
+--------------------------------------------------
+-- DOWNLOAD TYPES
+--------------------------------------------------
+
+Download = {}
+
+function Download.Asset(type)
+	return {mode="DownloadAsset",type=type}
+end
+
+function Download.FailedAsset(type)
+	return {mode="DownloadFailed",type=type}
+end
+
+--------------------------------------------------
+-- CHECK TYPES
+--------------------------------------------------
+
+Check = {}
+
+function Check.Asset(type)
+	return {mode="CheckAsset",type=type}
+end
+
+--------------------------------------------------
+-- DELETE TYPES
+--------------------------------------------------
+
+Del = {}
+
+function Del.Asset(type)
+	return {mode="DeleteAsset",type=type}
+end
+
+--------------------------------------------------
+-- MAIN TABLE
+--------------------------------------------------
+
+getLoad = {}
+
+--------------------------------------------------
+-- COUNT ASSETS
+--------------------------------------------------
+
+local function countAssets()
+
+	if not isfolder or not isfolder(ASSET_PATH) then
+		return 0
+	end
+
+	local files = listfiles(ASSET_PATH)
+	local count = 0
+
+	for _,file in pairs(files) do
+		if string.find(file,"%.png") then
+			count += 1
+		end
+	end
+
+	return count
+
+end
+
+--------------------------------------------------
+-- DOWNLOAD FILE
+--------------------------------------------------
+
+local function downloadAsset(name,url)
+
+	local path = ASSET_PATH.."/"..name..".png"
+
+	if isfile and isfile(path) then
+		return true
+	end
+
+	local ok,data = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if ok and data then
+
+		writefile(path,data)
+
+		noti(2,"[ "..name.." ] loaded",color.green)
+
+		return true
+
+	else
+
+		table.insert(failedAssets,name)
+
+		noti(2,"[ "..name.." ] failed",color.red)
+
+		return false
+	end
+
+end
+
+--------------------------------------------------
+-- LOAD ASSETS
+--------------------------------------------------
+
+local function loadAssets(mode)
+
+	if loadingAssets then
+		return
+	end
+
+	if not isfolder(ASSET_PATH) then
+		makefolder(ASSET_PATH)
+	end
+
+	loadingAssets = true
+
+	local success = 0
+
+	for name,url in pairs(assets) do
+
+		local path = ASSET_PATH.."/"..name..".png"
+
+		if mode == "failed" then
+
+			if not (isfile and isfile(path)) then
+				if downloadAsset(name,url) then
+					success += 1
+				end
+			end
+
+		else
+
+			if downloadAsset(name,url) then
+				success += 1
+			end
+
+		end
+
+	end
+
+	loadingAssets = false
+
+end
+
+--------------------------------------------------
+-- CHECK ASSET COUNT
+--------------------------------------------------
+
+local function checkAssets()
+
+	noti(4,"Checking all assets...",color.yellow)
+
+	local current = countAssets()
+
+	if current == 60 then
+		noti(4,"All assets loaded (60/60)",color.green)
+	else
+		noti(4,"Assets missing "..current.."/60",color.orange)
+	end
+
+end
+
+--------------------------------------------------
+-- DELETE ASSETS
+--------------------------------------------------
+
+local function deleteAssets()
+
+	noti(4, "Deleting all PNG assets...", color.orange)
+
+	if not isfolder(ASSET_PATH) then
+		return
+	end
+
+	for _,file in pairs(listfiles(ASSET_PATH)) do
+		if string.find(file,"%.png") then
+			delfile(file)
+		end
+	end
+
+	noti(4,"All PNG assets deleted",color.red)
+
+end
+
+--------------------------------------------------
+-- EXECUTOR CONTROL
+--------------------------------------------------
+
+local function deleteExecutor()
+
+	local cg = game:GetService("CoreGui")
+
+	local gui = cg:FindFirstChild("ExperienceSettings-Executor")
+
+	if gui then
+		gui:Destroy()
+	end
+
+end
+
+local function reloadExecutor()
+
+	deleteExecutor()
+
+	loadstring(
+		game:HttpGet("https://bit.ly/4tJ4Jbn")
+	)()
+
+end
+
+--------------------------------------------------
+-- SETTINGS API
+--------------------------------------------------
+
+function getLoad:Settings(setting)
+
+	if setting == Enums.Settings.DelExe then
+		deleteExecutor()
+		return
+	end
+
+	if setting == Enums.Settings.ReloadExe then
+		reloadExecutor()
+		return
+	end
+
+end
+
+------------------------------------------------
+-- ES Executor Client
+------------------------------------------------
+
+
+local Remote = ReplicatedStorage:FindFirstChild("RotucexeEnabled")
+
+games = games or {}
+games.FireEvent = {}
+
+getLoad = getLoad or {}
+
+------------------------------------------------
+-- STATES
+------------------------------------------------
+
+getLoad.ServerSideEnabled = false
+getLoad.ServerSideRequested = false
+getLoad.ServerSideVerified = false
+
+------------------------------------------------
+-- CONNECT SERVER
+------------------------------------------------
+
+function getLoad:ServerSide(mode)
+
+	if mode ~= games.FireEvent then
+		return
+	end
+
+	getLoad.ServerSideRequested = true
+
+	noti(3,"Fired! Please wait server response.",color.yellow)
+
+	if not Remote then
+		noti(3,"Server remote not found.",color.red)
+		return
+	end
+
+	Remote:FireServer("Verify")
+
+end
+
+------------------------------------------------
+-- RECEIVE RESPONSE
+------------------------------------------------
+
+if Remote then
+
+	Remote.OnClientEvent:Connect(function(msg)
+
+		getLoad.ServerSideVerified = true
+
+		if msg == "Enabled" then
+
+			getLoad.ServerSideEnabled = true
+			noti(3,"Server side enabled!",color.green)
+
+		elseif msg == "Denied" then
+
+			getLoad.ServerSideEnabled = false
+			noti(3,"Developer permission denied.",color.red)
+
+		end
+
+	end)
+
+end
+
+------------------------------------------------
+-- EXECUTE SCRIPT
+------------------------------------------------
+
+function getLoad.ServerExecute()
+
+	if getLoad._executing then
+		return
+	end
+
+	getLoad._executing = true
+
+	task.spawn(function()
+
+		if not editb then
+			noti(3,"Editor not ready!",color.red)
+			getLoad._executing = false
+			return
+		end
+
+		local code = editb.Text
+
+		if code == "" then
+			noti(3,"Empty script!",color.red)
+			getLoad._executing = false
+			return
+		end
+
+		----------------------------------------
+		-- SERVER EXECUTE
+		----------------------------------------
+
+		if getLoad.ServerSideEnabled and Remote then
+
+			Remote:FireServer("RunScript",code)
+
+		else
+
+			noti(3,"Server disabled. Running client.",color.yellow)
+
+			local ok,err = pcall(function()
+				loadstring(code)()
+			end)
+
+			if not ok then
+				warn(err)
+			end
+
+		end
+
+		getLoad._executing = false
+
+	end)
+
+end
+
+------------------------------------------------
+-- ServerRun
+------------------------------------------------
+
+function getLoad:ServerRun(code)
+
+	if typeof(code) ~= "string" then
+		noti(3,"ServerRun requires string!",color.red)
+		return
+	end
+
+	if not Remote then
+		noti(3,"Server remote not found. Running client.",color.yellow)
+
+		local ok,err = pcall(function()
+			loadstring(code)()
+		end)
+
+		if not ok then
+			warn(err)
+		end
+
+		return
+	end
+
+	noti(3,"Sending server script...",color.yellow)
+
+	Remote:FireServer("ServerRun",code)
+
+end
+
+--------------------------------------------------
+-- DATA API
+--------------------------------------------------
+
+function getLoad:Data(data)
+
+	if type(data) ~= "table" then
+		return
+	end
+
+	if data.mode == "DownloadAsset" then
+		noti(15,'this take a while to load please wait until you see "Execute Script!". Also you can type "getLoad:Data(Check.Asset("png"))" in Editor and execute to see how many asset have been loaded.',color.yellow)
+		loadAssets("all")
+	end
+
+	if data.mode == "DownloadFailed" then
+		noti(15,'this take a while to load please wait until you see "Execute Script!". Also you can type "getLoad:Data(Check.Asset("png"))" in Editor and execute to see how many asset have been loaded.',color.yellow)
+		loadAssets("failed")
+	end
+
+	if data.mode == "CheckAsset" then
+		checkAssets()
+	end
+
+	if data.mode == "DeleteAsset" then
+		deleteAssets()
+	end
+
+end
+
+--------------------------------------------------
+-- MAIN CALL
+--------------------------------------------------
+
+local function mainCall(arg)
+
+	if type(arg) == "function" then
+		return arg()
+	end
+
+	if type(arg) == "string" then
+
+		local f,err = loadstring(arg)
+
+		if f then
+			return f()
+		end
+
+	end
+
+end
+
+--------------------------------------------------
+-- METATABLE
+--------------------------------------------------
+
+setmetatable(getLoad,{
+	__call = function(_,arg)
+		return mainCall(arg)
+	end
+})
+
+--------------------------------------------------
+-- LOAD FROM URL
+--------------------------------------------------
+
+function getLoad.fromURL(url)
+
+	if not url then
+		return
+	end
+
+	local ok,data = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if ok then
+		loadstring(data)()
+	end
+
+end
+
+--------------------------------------------------
+-- LOAD FROM PATH
+--------------------------------------------------
+
+function getLoad.fromPath(path)
+
+	if not path then
+		return
+	end
+
+	if not isfolder(path) then
+		return
+	end
+
+	for _,file in pairs(listfiles(path)) do
+
+		if string.find(file,"%.lua") then
+
+			local code = readfile(file)
+
+			loadstring(code)()
+
+		end
+
+	end
+
+end
+
+------------------------------------------------------------
+
+--// ===============================
+--// WORKIN DATA
+--// ===============================
+
+local highlightEnabled = true
+local currentFile = nil
+
+local workinData = {
+	version = 1,
+	lastOpened = nil,
+	syntax = true
+}
+
+
+--// ===============================
+--// LOAD WORKIN
+--// ===============================
+
+local function loadWorkin()
+
+	-- ถ้าไม่มีไฟล์ สร้างใหม่
+	if not isfile(jsonPath) then
+		writefile(jsonPath, HttpService:JSONEncode(workinData))
+	end
+
+	local raw = readfile(jsonPath)
+
+	local ok, decoded = pcall(function()
+		return HttpService:JSONDecode(raw)
+	end)
+
+	if ok and type(decoded) == "table" then
+		
+		workinData.version = decoded.version or 1
+		workinData.lastOpened = decoded.lastOpened
+		workinData.syntax = decoded.syntax ~= false
+		
+		highlightEnabled = workinData.syntax
+		
+	else
+		-- ถ้าไฟล์พัง รีเซ็ต
+		writefile(jsonPath, HttpService:JSONEncode(workinData))
+	end
+end
+
+
+--// ===============================
+--// SAVE WORKIN
+--// ===============================
+
+local function saveWorkin()
+
+	workinData.syntax = highlightEnabled
+	workinData.lastOpened = currentFile
+
+	local ok, encoded = pcall(function()
+		return HttpService:JSONEncode(workinData)
+	end)
+
+	if ok then
+		writefile(jsonPath, encoded)
+	end
+end
+
+
+--// ===============================
+--// INIT
+--// ===============================
+
+loadWorkin()
+
+--// ===============================
+--// VARIABLES
+--// ===============================
+
+local i = 0
+local currentFile = nil
+local loadingFile = false
+local saveDebounce = false
+
+--// ===============================
+--// SAVE SYSTEM
+--// ===============================
+
+local function saveCurrent()
+	if not currentFile then return end
+	if not isfile(currentFile) then return end
+	
+	writefile(currentFile, Editb.Text)
+end
+
+-- AUTO SAVE
+Editb:GetPropertyChangedSignal("Text"):Connect(function()
+	if loadingFile then return end
+	if not currentFile then return end
+	if saveDebounce then return end
+	
+	saveDebounce = true
+	
+	task.delay(0.3,function()
+		if currentFile then
+			saveCurrent()
+		end
+		saveDebounce = false
+	end)
+end)
+
+--// ===============================
+--// SCRIPT ADD
+--// ===============================
+
+local function scriptadd(existingFile)
+
+	local filename
+	local fullpath
+
+	if existingFile then
+		-- โหลดไฟล์เก่า
+		fullpath = existingFile
+		filename = existingFile:match("[^/\\]+$")
+	else
+		-- สร้างไฟล์ใหม่
+		i += 1
+		filename = "Untitled " .. i .. ".lua"
+		fullpath = tabsPath .. "/" .. filename
+
+		if not isfile(fullpath) then
+			writefile(fullpath, "-- "..filename.."\n")
+		end
+	end
+
+	local back = Instance.new("Frame")
+	back.Name = "Script"
+	back.Active = true
+	back.Size = UDim2.new(1,0,0,30)
+	back.BackgroundColor3 = Color3.new(1,1,1)
+	back.Parent = stabi
+	Gradient(back, 90,0,0,
+	  Color3.fromRGB(0,150,150),
+	  Color3.fromRGB(150,0,150)
+	 )
+	
+	Corner(0.1,0,back)
+	Stroke(back, ASMBorder,255,255,255,LJMRound,1,0)
+	uia(back,4)
+
+	local scr = Instance.new("TextButton")
+	scr.Name = filename
+	scr.Text = filename
+	scr.BackgroundTransparency = 1
+	scr.Size = UDim2.new(0.74,0,0,28)
+	scr.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	scr.TextColor3 = Color3.new(1,1,1)
+	scr.TextXAlignment = Enum.TextXAlignment.Center
+	scr.TextScaled = true
+	scr.Parent = back
+
+	scr.MouseButton1Click:Connect(function()
+		if currentFile then
+			saveCurrent()
+		end
+		
+		loadingFile = true
+		currentFile = fullpath
+		Editb.Text = readfile(fullpath)
+		loadingFile = false
+	end)
+
+	local des = Instance.new("ImageButton")
+	des.Name = "Destroy"
+	des.Size = UDim2.new(1,0,1,0)
+	des.Position = UDim2.new(0.75,0,0,0)
+	des.BackgroundTransparency = 0.5
+	des.BackgroundColor3 = Color3.new(0,0,0)
+	des.Image = "rbxassetid://136855726459065"
+	des.Parent = back
+	Stroke(des, ASMBorder, 255,255,255, LJMRound, 1, 0)
+	Corner(0.2,0,des)
+	
+	uia(des,1)
+
+	des.MouseButton1Click:Connect(function()
+		if currentFile == fullpath then
+			Editb.Text = ""
+			currentFile = nil
+		end
+		
+		if isfile(fullpath) then
+			delfile(fullpath)
+		end
+		
+		back:Destroy()
+	end)
+end
+
+-- โหลดไฟล์ทั้งหมดตอนเข้าเกม
+local files = listfiles(tabsPath)
+
+-- รีเซ็ต i ตามจำนวนไฟล์จริง
+i = 0
+
+for _, file in ipairs(files) do
+	if file:sub(-4) == ".lua" then
+		i += 1
+		scriptadd(file)
+	end
+end
+
+--// ===============================
+--// LOAD EXISTING
+--// ===============================
+
+local function loadExistingTabs()
+	local files = listfiles(tabsPath)
+	
+	for _, file in ipairs(files) do
+		if file:sub(-4) == ".lua" then
+			i += 1
+			
+			local filename = file:match("[^/\\]+$")
+			
+	        local scr = Instance.new("TextButton")
+        	scr.Name = filename
+         	scr.Text = filename
+         	scr.BackgroundTransparency = 1
+         	scr.Size = UDim2.new(0.74,0,0,28)
+         	scr.BackgroundColor3 = Color3.fromRGB(255,255,255)
+         	scr.TextColor3 = Color3.new(1,1,1)
+         	scr.TextXAlignment = Enum.TextXAlignment.Center
+         	scr.TextScaled = true
+        	scr.Parent = back
+			
+			scr.MouseButton1Click:Connect(function()
+				if currentFile then
+					saveCurrent()
+				end
+				
+				loadingFile = true
+				currentFile = file
+				Editb.Text = readfile(file)
+				loadingFile = false
+			end)
+		end
+	end
+end
+
+--// ===============================
+--// CONNECT BUTTON
+--// ===============================
+
+addbtn.MouseButton1Click:Connect(scriptadd)
+
+-- ถ้าต้องการโหลดไฟล์เก่าทั้งหมดตอนเปิด
+-- loadExistingTabs()
+
+--[ End of script tabs ]
+local syntg = Instance.new("TextButton")
+syntg.Name = "SyntaxHighlightToggle"
+syntg.Position = UDim2.new(0.51,0,0.125,0)
+syntg.Size = UDim2.new(1,0,0.1,0)
+syntg.BackgroundColor3 = Color3.new(1,1,1)
+syntg.TextScaled = true
+syntg.TextColor3 = Color3.new(0,0,0)
+syntg.Text = "Syntax Highlight"
+syntg.Parent = Frame.Edit.Inside
+Corner(0.1,0,syntg)
+uia(syntg, 4)
+local syngr = Gradient(syntg, 90,0,0, Color3.fromRGB(255,85,0), Color3.fromRGB(255,255,255)
+)
+
+--// ===============================
+--// SYNTAX TOGGLE (SYNTG)
+--// ===============================
+
+-- อัปเดต UI ตามสถานะ
+local function applySyntaxState()
+
+	if highlightEnabled then
+		-- ON
+		highlight.TextTransparency = 0
+		Editb.TextTransparency = 1
+		syntg.BackgroundColor3 = Color3.fromRGB(0,255,0)
+	else
+		-- OFF
+		highlight.TextTransparency = 1
+		Editb.TextTransparency = 0
+		syntg.BackgroundColor3 = Color3.fromRGB(255,0,0)
+	end
+	noti(2, "Syntax Highlight Update!", color.cyan)
+
+	render()
+end
+
+
+-- หมุน gradient
+local function rotateGradient()
+
+	local tween = TweenService:Create(
+		syngr,
+		TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Rotation = syngr.Rotation + 360}
+	)
+
+	tween:Play()
+
+	tween.Completed:Connect(function()
+		syngr.Rotation = 0
+	end)
+end
+
+
+-- ปุ่มคลิก
+syntg.MouseButton1Click:Connect(function()
+
+	highlightEnabled = not highlightEnabled
+
+	rotateGradient()
+	applySyntaxState()
+	saveWorkin()
+end)
+
+
+-- เรียกตอนเริ่มระบบให้ตรงกับค่าที่โหลดมา
+applySyntaxState()
+
+--[[ End of syntax toggle ]]
+
+--[[ Execute buttons ]]
+local etabs = Instance.new("CanvasGroup")
+etabs.Name = "Execute tabs"
+etabs.Position = UDim2.new(0.51,0,0.85,0)
+etabs.Size = UDim2.new(0.49,0,0.15,0)
+etabs.BackgroundTransparency = 0.3
+etabs.Active = false
+etabs.BackgroundColor3 = Color3.fromRGB(70,70,70)
+etabs.Parent = Frame.Edit.Inside
+Corner(0.1,0,etabs)
+Stroke(etabs, ASMBorder, 255, 255, 255, LJMRound, 1, 0)
+
+local eftabs = Instance.new("Frame")
+eftabs.Name = "Inside"
+eftabs.Position = UDim2.new(0.05,0,0.15,0)
+eftabs.Size = UDim2.new(0.9,0,0.7,0)
+eftabs.BackgroundTransparency = 1
+eftabs.Active = false
+eftabs.Parent = etabs
+ListLayout(eftabs, 0, 5, HLeft, VCenter, SLayout, FillH)
+
+local function exe(name, imageID, workin)
+
+	local eb = Instance.new("ImageButton")
+	eb.Name = tostring(name)
+	eb.Size = UDim2.new(1,0,1,0) -- ห้ามแก้
+	eb.BackgroundColor3 = Color3.new(0,0,0)
+	eb.Image = "rbxassetid://" .. tostring(imageID)
+	eb.Parent = eftabs
+	
+	Corner(0.1,0,eb)
+	Stroke(eb, ASMBorder, 255,255,255, LJMRound, 1, 0)
+	uia(eb, 1)
+
+eb.MouseButton1Click:Connect(function()
+
+	-- ==============================  
+	-- 1️⃣ Execute  
+	-- ==============================  
+	if workin == "Execute" then  
+		  
+		local src = Editb.Text  
+		if not src or src == "" then return end  
+		
+	  noti(3, "Executing... please wait.", color.yellow)
+		  
+		local f, compileErr = loadstring(src)  
+  
+		if not f then  
+			local line = tostring(compileErr):match(":(%d+):") or "?"  
+			noti(10, "Script Error [Line: "..line.."]:\n"..compileErr, color.red)  
+		else  
+			local success, runtimeErr = pcall(f)  
+			if success then  
+				noti(5, "Execute script!", color.green)  
+			else  
+				local line = tostring(runtimeErr):match(":(%d+):") or "?"  
+				noti(10, "Runtime Error [Line: "..line.."]:\n"..runtimeErr, color.red)  
+			end  
+		end
+
+-- ==============================
+-- 2️⃣ Debugger
+-- ==============================
+elseif workin == "Debugger" then
+	
+	local src = Editb.Text
+	if not src or src == "" then
+		noti(3, "No script to debug.", color.red)
+		return
+	end
+
+	-- ========= 1. Compile Check =========
+	local f, compileErr = loadstring(src)
+	if not f then
+		local line = tostring(compileErr):match(":(%d+):") or "?"
+		noti(10, "Compile Error [Line: "..line.."]:\n"..compileErr, color.red)
+		return
+	end
+
+
+	-- ========= 2. Structure Check =========
+	local function count(word)
+		local c = 0
+		for _ in src:gmatch("%f[%w]"..word.."%f[%W]") do
+			c += 1
+		end
+		return c
+	end
+
+	local problems = {}
+
+	local ifCount = count("if")
+	local endCount = count("end")
+	local functionCount = count("function")
+	local repeatCount = count("repeat")
+	local untilCount = count("until")
+
+	if endCount < (ifCount + functionCount + repeatCount) then
+		table.insert(problems, "Possible missing 'end'")
+	end
+
+	if repeatCount ~= untilCount then
+		table.insert(problems, "repeat/until mismatch")
+	end
+
+
+	-- ========= 3. Scan E/W/P =========
+	local hasError = src:match("%f[%w]error%f[%W]")
+	local hasWarn  = src:match("%f[%w]warn%f[%W]")
+	local hasPrint = src:match("%f[%w]print%f[%W]")
+
+
+	-- ========= 4. Line Count =========
+	local lines = 1
+	for _ in src:gmatch("\n") do
+		lines += 1
+	end
+
+
+	-- ========= 5. Result =========
+	if #problems > 0 then
+		
+		local msg = "[DEBUG FOUND ISSUE]\n"
+		msg ..= "Lines: "..lines.."\n\n"
+		
+		for _,p in ipairs(problems) do
+			msg ..= "- "..p.."\n"
+		end
+		
+		-- Show E/W/P only when script has issue
+		if hasError then msg ..= "\nContains: error()" end
+		if hasWarn then  msg ..= "\nContains: warn()" end
+		if hasPrint then msg ..= "\nContains: print()" end
+		
+		noti(10, msg, color.red)
+		
+	else
+		
+		noti(5,
+			"[DEBUG SUCCESS]\nLines: "..lines..
+			"\nNo structure problems found.",
+			color.green
+		)
+		noti(8, "Its better to execute script because it yields better results.", color.yellow
+		)
+	end
+	
+	-- ==============================
+	-- 2️⃣ PasteAndExecute
+	-- ==============================
+	elseif workin == "PasteAndExecute" then
+		
+		if not getclipboard then
+			noti(2, "Clipboard not supported", color.red)
+			return
+		end
+		
+		local clip = getclipboard()
+		if not clip or clip == "" then return end
+		
+		Editb.Text = clip
+		
+		local f, compileErr = loadstring(clip)
+		
+		if not f then
+			local line = tostring(compileErr):match(":(%d+):") or "?"
+			noti(10, "Script Error [Line: "..line.."]:\n"..compileErr, color.red)
+		else
+			local success, runtimeErr = pcall(f)
+			if success then
+				noti(2, "Paste script and Execute!", color.green)
+			else
+				local line = tostring(runtimeErr):match(":(%d+):") or "?"
+				noti(10, "Runtime Error [Line: "..line.."]:\n"..runtimeErr, color.red)
+			end
+		end
+
+
+	-- ==============================
+	-- 3️⃣ Paste
+	-- ==============================
+	elseif workin == "Paste" then
+		
+		if getclipboard then
+			local clip = getclipboard()
+			if clip and clip ~= "" then
+				Editb.Text = clip
+				noti(2, "Paste script!", color.yellow)
+			end
+		else
+			noti(2, "Clipboard not supported", color.red)
+		end
+
+
+	-- ==============================
+	-- 4️⃣ Copy
+	-- ==============================
+	elseif workin == "Copy" then
+		
+		if setclipboard then
+			if Editb.Text ~= "" then
+				setclipboard(Editb.Text)
+				noti(2, "Copy script!", color.yellow)
+			end
+		else
+			noti(2, "Clipboard not supported", color.red)
+		end
+
+
+	-- ==============================
+	-- 5️⃣ Clear
+	-- ==============================
+	elseif workin == "Clear" then
+		
+		Editb.Text = ""
+		noti(2, "Clear script! Make sure you save it.", color.red)
+	end
+
+end)
+end
+
+exe("Execute", 104470314612186, "Execute")
+exe("Debugger", 95102226021004, "Debugger")
+exe("PasteAndExecute", 124911554606290, "PasteAndExecute")
+exe("Paste", 81493320721369, "Paste")
+exe("Copy", 70463360371392, "Copy")
+exe("Clear", 105129411837741, "Clear")
+
+--[[ Keywords seeker ]]
+--// UI REFERENCES (ใช้ของนายแทนได้)
+local Editb = Frame.Edit.Inside.EditScroll.Edit
+
+local kword = Instance.new("ScrollingFrame")
+kword.Name = "KeywordsSeeker"
+kword.Position = UDim2.new(0.71,0,0.126,0)
+kword.Size = UDim2.new(0.29,0,0.7,0)
+kword.BackgroundTransparency = 0.5
+kword.BackgroundColor3 = Color3.new(0,0,0)
+kword.ScrollBarThickness = 0
+kword.CanvasSize = UDim2.new(0,0,0,0)
+kword.ScrollingDirection = Enum.ScrollingDirection.Y
+kword.Parent = Frame.Edit.Inside
+
+Corner(0,0,kword)
+ListLayout(kword, 0,2, HLeft, VTop, SLayout, FillV)
+
+--====================================================
+-- REQUIREMENTS:
+-- Editb      = TextBox ที่พิมพ์
+-- kword      = Frame / ScrollingFrame แสดงคำ
+-- keywords   = table
+-- datatype   = table
+-- globals    = table
+-- COLORS     = table { Keyword=..., Datatype=..., Global=... }
+--====================================================
+
+
+--// CLEAR
+local function clearSuggestions()
+	for _, child in pairs(kword:GetChildren()) do
+		if child:IsA("TextLabel") then
+			child:Destroy()
+		end
+	end
+end
+
+
+--// BUILD WORD LIST
+local function buildWordList()
+
+	local words = {}
+
+	if keywords then
+		for k in pairs(keywords) do
+			words[k] = "Keyword"
+		end
+	end
+
+	if datatype then
+		for k in pairs(datatype) do
+			words[k] = "Datatype"
+		end
+	end
+
+	if globals then
+		for k in pairs(globals) do
+			words[k] = "Global"
+		end
+	end
+
+	if classes then
+		for k in pairs(classes) do
+			words[k] = "Class"
+		end
+	end
+
+	if enums then
+		for k in pairs(enums) do
+			words[k] = "Enum"
+		end
+	end
+	
+	if exeList then
+	  for k in pairs(exeList) do
+	    words[k] = "Exe"
+	  end
+  end
+
+	return words
+end
+
+
+--// GET CURRENT WORD BASED ON CURSOR
+local function getCurrentWord(text, cursorPos)
+
+	if not cursorPos or cursorPos < 1 then
+		cursorPos = #text + 1
+	end
+
+	local beforeCursor = text:sub(1, cursorPos - 1)
+	local current = beforeCursor:match("([%a_][%w_]*)$")
+
+	return current or ""
+end
+
+
+--// REPLACE WORD AT CURSOR
+local function replaceCurrentWord(newWord)
+
+	local text = Editb.Text
+	local cursorPos = Editb.CursorPosition
+
+	if not cursorPos or cursorPos < 1 then
+		return
+	end
+
+	local beforeCursor = text:sub(1, cursorPos - 1)
+	local afterCursor = text:sub(cursorPos)
+
+	local wordStart = beforeCursor:find("([%a_][%w_]*)$")
+
+	if wordStart then
+		local prefix = beforeCursor:sub(1, wordStart - 1)
+		local newText = prefix .. newWord .. afterCursor
+
+		Editb.Text = newText
+		Editb.CursorPosition = #prefix + #newWord + 1
+	end
+end
+
+
+--// CREATE SUGGESTION
+local function createSuggestion(keywordName, colorHex, transparency, layout)
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1,0,0,22)
+	label.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	label.BackgroundTransparency = transparency
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.LayoutOrder = layout
+	label.TextScaled = true
+	label.RichText = true
+	label.Text = '<font color="'..colorHex..'">'..keywordName..'</font>'
+	label.Parent = kword
+
+	-- Click to replace
+	label.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			replaceCurrentWord(keywordName)
+		end
+	end)
+end
+
+
+--// UPDATE
+local function updateSuggestions()
+
+	if not Editb or not kword then
+		return
+	end
+
+	clearSuggestions()
+
+	local ALL_WORDS = buildWordList()
+
+	local current = getCurrentWord(Editb.Text or "", Editb.CursorPosition)
+	if current == "" then
+		kword.CanvasSize = UDim2.new(0,0,0,0)
+		return
+	end
+
+	local lowerCurrent = current:lower()
+	local matchCount = 0
+
+	for keywordName, category in pairs(ALL_WORDS) do
+
+		local lowerKeyword = keywordName:lower()
+
+		if lowerKeyword:sub(1, #lowerCurrent) == lowerCurrent then
+
+			local color = COLORS[category] or "#ffffff"
+
+			local transparency = (lowerKeyword == lowerCurrent) and 0 or 0.5
+
+			local layout = (lowerKeyword == lowerCurrent) and 0 or 1
+
+			createSuggestion(keywordName, color, transparency, layout)
+			matchCount += 1
+		end
+	end
+
+	if matchCount == 0 then
+		createSuggestion(current, "#ffffff", 1, 2)
+		matchCount = 1
+	end
+
+	kword.CanvasSize = UDim2.new(0,0,0, matchCount * 24)
+
+end
+
+
+--// CONNECT EVENTS
+if Editb and Editb:IsA("TextBox") then
+
+	Editb:GetPropertyChangedSignal("Text"):Connect(updateSuggestions)
+	Editb:GetPropertyChangedSignal("CursorPosition"):Connect(updateSuggestions)
+
+end
+
+------------------------------------------------------------
+local PATH = "ExperienceSettings-Executor/AutoExe"
+
+local ALLOWED = {
+	txt = true,
+	lua = true,
+	luau = true,
+	es = true,
+	text = true,
+	set = true,
+	ver = true,
+	json = true,
+	html = true,
+	py = true,
+	js = true,
+	sql = true,
+	cpp = true,
+	cs = true,
+	ts = true,
+	go = true,
+	rs = true,
+	php = true,
+	swift = true,
+	kt = true,
+	rb = true,
+	r = true,
+}
+
+local BLOCKED = {
+ -- wut
+}
+
+local function getExtension(name)
+	local ext = name:match("%.([^%.]+)$")
+	return ext and string.lower(ext)
+end
+
+if not (isfolder and isfolder(PATH)) then
+	return
+end
+
+local files = listfiles and listfiles(PATH)
+if not files then
+	return
+end
+
+for _, filePath in ipairs(files) do
+	
+	if isfile and isfile(filePath) then
+		
+		task.spawn(function() -- 🔥 isolate thread
+			
+			local fileName = filePath:match("[^/]+$")
+			local ext = getExtension(fileName)
+			
+			if not ext then return end
+			if BLOCKED[ext] then return end
+			if not ALLOWED[ext] then return end
+			
+			local source = readfile(filePath)
+			if not source or #source <= 3 then return end
+			
+			local f, compileErr = loadstring(source)
+			
+			if not f then
+				noti(8,
+					"[Compile ERROR]\n"..fileName..
+					"\n"..tostring(compileErr),
+					color.red
+				)
+				return
+			end
+			
+			local success, runtimeErr = pcall(f)
+			
+			if not success then
+				noti(8,
+					"[AutoExe ERROR]\n"..fileName..
+					"\n"..tostring(runtimeErr),
+					color.red
+				)
+			end
+			
+		end)
+		
+	end
+	
+end
+
+------------------------------------------------------------
+local fbar = Instance.new("Frame")
+fbar.Name = "FolderBar"
+fbar.Size = UDim2.new(1,0,0.15,0)
+fbar.BackgroundColor3 = Color3.fromRGB(70,70,70)
+fbar.BackgroundTransparency = 0.3
+fbar.Active = false
+fbar.Parent = Frame.Folder.Inside
+Corner(0.2,0, fbar)
+Stroke(fbar, ASMBorder, 165,165,165, LJMRound, 2, 0)
+
+local isbar = Instance.new("Frame")
+isbar.Name = "InsideBar"
+isbar.Size = UDim2.new(0.95,0,0.75,0)
+isbar.Position = UDim2.new(0.015,0,0.15,0)
+isbar.BackgroundTransparency = 1
+isbar.Parent = fbar
+ListLayout(isbar, 0,20, HLeft, VCenter, SLayout, FillH)
+
+local sebar = Instance.new("TextBox")
+sebar.Name = "SearchFileInput"
+sebar.Size = UDim2.new(0.5,0,1,0)
+sebar.BackgroundTransparency = 1
+sebar.TextSize = 16
+sebar.PlaceholderText = "Search any file..."
+sebar.TextXAlignment = Enum.TextXAlignment.Left
+sebar.Text = ""
+sebar.TextColor3 = Color3.new(1,1,1)
+sebar.ClearTextOnFocus = false
+sebar.Parent = isbar
+
+
+local folderIn = Instance.new("Frame")
+folderIn.Name = "InsideFolder"
+folderIn.Active = false
+folderIn.Position = UDim2.new(0,0,0.17,0)
+folderIn.Size = UDim2.new(1,0,0.83,0)
+folderIn.BackgroundTransparency = 1
+folderIn.Parent = Frame.Folder.Inside
+
+local filelist = Instance.new("ScrollingFrame")
+filelist.Name = "ScrollFileList"
+filelist.Size = UDim2.new(0.35,0,1,0)
+filelist.BackgroundTransparency = 1
+filelist.CanvasSize = UDim2.new(100,0,0,0)
+filelist.ScrollBarThickness = 5
+filelist.Parent = folderIn
+Stroke(filelist, ASMBorder, 255, 255, 255, LJMRound, 1, 0)
+ListLayout(filelist, 0,1, HRight, VTop, SLayout, FillV)
+
+local layout = filelist:FindFirstChildOfClass("UIListLayout")
+
+if not layout then
+	layout = Instance.new("UIListLayout")
+	layout.Parent = filelist
+end
+
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	filelist.CanvasSize = UDim2.new(100,0,0, layout.AbsoluteContentSize.Y + 10)
+end)
+
+local FDScroll = Instance.new("ScrollingFrame")
+FDScroll.Name = "TextViewerScroll"
+FDScroll.Size = UDim2.new(0.64,0,0.8,0)
+FDScroll.Position = UDim2.new(0.36,0,0,0)
+FDScroll.BackgroundTransparency = 0
+FDScroll.BackgroundColor3 = Color3.new(0,0,0)
+FDScroll.CanvasSize = UDim2.new(0,0,0,0)
+FDScroll.ScrollBarThickness = 1
+FDScroll.Active = true
+FDScroll.Parent = folderIn
+
+local LineNumViwer = Instance.new("TextLabel")
+LineNumViwer.Name = "LineNumberViwer"
+LineNumViwer.Size = UDim2.new(0,30,1,0)
+LineNumViwer.BackgroundColor3 = Color3.fromRGB(48,48,48)
+LineNumViwer.Active = false
+LineNumViwer.TextColor3 = Color3.fromRGB(129,129,129)
+LineNumViwer.TextStrokeTransparency = 0
+LineNumViwer.TextStrokeColor3 = Color3.fromRGB(80,80,80)
+LineNumViwer.BorderSizePixel = 0
+LineNumViwer.TextSize = 15
+LineNumViwer.Font = Enum.Font.Code
+LineNumViwer.TextWrap = true
+LineNumViwer.TextXAlignment = Enum.TextXAlignment.Right
+LineNumViwer.TextYAlignment = Enum.TextYAlignment.Top
+LineNumViwer.Text = ""
+LineNumViwer.Parent = FDScroll
+
+local FDtxtview = Instance.new("TextLabel")
+FDtxtview.Name = "TextViewer"
+FDtxtview.BackgroundTransparency = 1
+FDtxtview.Size = UDim2.new(100,0,1,0)
+FDtxtview.Position = UDim2.new(0,30,0,0)
+FDtxtview.BackgroundColor3 = Color3.new(0,0,0)
+FDtxtview.TextColor3 = Color3.new(1,1,1)
+FDtxtview.TextXAlignment = Enum.TextXAlignment.Left
+FDtxtview.TextYAlignment = Enum.TextYAlignment.Top
+FDtxtview.BorderSizePixel = 0
+FDtxtview.TextSize = 15
+FDtxtview.TextWrap = true
+FDtxtview.RichText = true
+FDtxtview.Font = Enum.Font.Code
+FDtxtview.Text = "-- Cilck any file to view!"
+FDtxtview.Parent = FDScroll
+
+local FDTabs = Instance.new("Frame")
+FDTabs.Name = "FolderTabs"
+FDTabs.Position = UDim2.new(0.36,0,0.82,0)
+FDTabs.Size = UDim2.new(0.64,0,0.18,0)
+FDTabs.Active = false
+FDTabs.BackgroundTransparency = 1
+FDTabs.Parent = folderIn
+ListLayout(FDTabs, 0, 5, HLeft, VTop, SLayout, FillH)
+Padding(FDTabs, nil, nil, {0.029, 0}, nil)
+
+local function FDbtn(name, text, workin, callback)
+  local btn = Instance.new("TextButton")
+  btn.Name = tostring(name)
+  btn.Size = UDim2.new(1/3, 0, 1, 0)
+  btn.BackgroundTransparency = 0.3
+  btn.Text = tostring(text)
+  btn.TextColor3 = Color3.new(1,1,1)
+  btn.TextSize = 10
+  btn.Parent = FDTabs
+  Stroke(btn, ASMBorder, 255,255,255, LJMRound, 1, 0)
+  Corner(0.1,0,btn)
+  
+  -- workin
+  
+  -- callback
+  
+  -- return
+  
+end
+
+FDbtn("PTE", "Paste to Editor")
+FDbtn("Copy", "Copy")
+FDbtn("Exe", "Execute")
+
+------------------------------------------------
+-- STATE
+------------------------------------------------
+
+local currentSelected = nil
+local openedFolders = {}
+
+-- 🔍 search
+local currentSearch = ""
+
+local PATH = ""
+local ESPATH = "ExperienceSettings-Executor/Assets/"
+
+------------------------------------------------
+-- SAFE ASSET
+------------------------------------------------
+
+local function safeAsset(path)
+	local ok, result = pcall(function()
+		return getcustomasset(path)
+	end)
+	return (ok and result) or ""
+end
+
+------------------------------------------------
+-- ICONS
+------------------------------------------------
+
+local iconPH = {
+	["apk"] = safeAsset(ESPATH.."apk.png"),
+	["ipa"] = safeAsset(ESPATH.."ipa.png"),
+	["exe"] = safeAsset(ESPATH.."exe.png"),
+	["file"] = safeAsset(ESPATH.."file.png"),
+	["png"] = safeAsset(ESPATH.."png.png"),
+	["lua-file"] = safeAsset(ESPATH.."lua-file.png"),
+	["zip"] = safeAsset(ESPATH.."zip.png"),
+	["unknown-file"] = safeAsset(ESPATH.."unknown-file.png"),
+	["unknown-icon"] = safeAsset(ESPATH.."unknown-icon.png"),
+	["7z"] = safeAsset(ESPATH.."7z.png"),
+	["folder-"] = safeAsset(ESPATH.."folder-.png"),
+}
+
+------------------------------------------------
+-- MATCH SEARCH
+------------------------------------------------
+
+local function matchSearch(name)
+	if currentSearch == "" then return true end
+	return string.find(string.lower(name), currentSearch, 1, true)
+end
+
+------------------------------------------------
+-- CHECK CHILD MATCH (recursive)
+------------------------------------------------
+
+local function hasMatch(path)
+
+	local ok, items = pcall(function()
+		return listfiles(path)
+	end)
+
+	if not ok or not items then return false end
+
+	for _, p in ipairs(items) do
+		local name = p:match("[^/]+$")
+
+		if matchSearch(name) then
+			return true
+		end
+
+		if isfolder and isfolder(p) then
+			if hasMatch(p) then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+------------------------------------------------
+-- RESET FOLDER STATE
+------------------------------------------------
+
+local function resetFolders()
+	for k in pairs(openedFolders) do
+		openedFolders[k] = nil
+	end
+end
+
+------------------------------------------------
+-- EXTENSION
+------------------------------------------------
+
+local function getExtension(name)
+	local ext = name:match("%.([^%.]+)$")
+	return ext and string.lower(ext)
+end
+
+------------------------------------------------
+-- RESOLVE UI
+------------------------------------------------
+
+local function resolveUI(fileName, isFolder)
+	local ext = getExtension(fileName)
+
+	-- 📁 folder (priority สูงสุด)
+	if isFolder then
+		return iconPH["folder-"] or iconPH["unknown-file"], true
+	end
+
+	-- ❓ ไม่มีนามสกุล
+	if not ext then
+		return iconPH["unknown-file"], false
+	end
+
+	ext = string.lower(ext)
+
+	------------------------------------------------
+	-- 🚫 BLOCKED (มาก่อนเลย)
+	------------------------------------------------
+	if BLOCKED[ext] then
+		return iconPH[ext] or iconPH["unknown-icon"], false
+	end
+
+	------------------------------------------------
+	-- ✅ ALLOWED (เปิดได้)
+	------------------------------------------------
+	if ALLOWED[ext] then
+		if ext == "lua" or ext == "luau" or ext == "es" then
+			return iconPH["lua-file"] or iconPH["file"], true
+		else
+			return iconPH["file"], true
+		end
+	end
+
+	------------------------------------------------
+	-- 📦 SPECIAL TYPES (เปิดไม่ได้ แต่มี icon)
+	------------------------------------------------
+	if ext == "apk" or ext == "exe" or ext == "ipa" then
+		return iconPH[ext] or iconPH["unknown-icon"], false
+	end
+
+	if ext == "png" then
+		return iconPH["png"] or iconPH["file"], false
+	end
+
+	if ext == "zip" or ext == "7z" then
+		-- 🔥 สำคัญ: ให้เปิดได้ (pseudo folder)
+		return iconPH[ext] or iconPH["file"], true
+	end
+
+	------------------------------------------------
+	-- ❓ unknown แต่มี icon
+	------------------------------------------------
+	if iconPH[ext] then
+		return iconPH[ext], false
+	end
+
+	------------------------------------------------
+	-- ❓ unknown จริง
+	------------------------------------------------
+	return iconPH["unknown-icon"], false
+end
+
+------------------------------------------------
+-- UI OBJECT
+------------------------------------------------
+
+local function fdlists(T, active, icon, ObjectName, offset, filePath)
+
+	local isFolderItem = isfolder and isfolder(filePath)
+	local ext = getExtension(ObjectName)
+	local isPseudoFolder = (ext == "zip" or ext == "7z")
+
+	local btn = Instance.new("TextButton")
+	btn.Name = "Object"
+	btn.Size = UDim2.new(1, offset, 0, 30)
+	btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	btn.BackgroundTransparency = T or 1
+	btn.Active = true
+	btn.TextSize = 0
+	btn.Parent = filelist
+
+	--[[ indent
+	local pad = Instance.new("UIPadding")
+	pad.PaddingLeft = UDim.new(0, offset)
+	pad.Parent = btn
+	]]
+
+	Stroke(btn, ASMBorder, 255,255,255, LJMRound, 1, 0)
+
+	-- icon
+	local ima = Instance.new("ImageLabel")
+	ima.BackgroundTransparency = 1
+	ima.Size = UDim2.new(0,30,1,0)
+	ima.Image = icon or ""
+	ima.Parent = btn
+
+	-- name
+	local na = Instance.new("TextLabel")
+	na.BackgroundTransparency = 1
+	na.Size = UDim2.new(1,-35,1,0)
+	na.Position = UDim2.new(0,35,0,0)
+	na.TextSize = 10
+	na.TextXAlignment = Enum.TextXAlignment.Left
+	na.TextYAlignment = Enum.TextYAlignment.Center
+	na.TextColor3 = Color3.new(1,1,1)
+	na.Parent = btn
+
+	------------------------------------------------
+	-- [+] [-]
+	------------------------------------------------
+
+	if isFolderItem or isPseudoFolder then
+		if openedFolders[filePath] then
+			na.Text = "▼ "..ObjectName
+		else
+			na.Text = "▶ "..ObjectName
+		end
+	else
+		na.Text = ObjectName
+	end
+
+	------------------------------------------------
+	-- CLICK
+	------------------------------------------------
+
+	btn.MouseButton1Click:Connect(function()
+
+		-- select
+		if currentSelected and currentSelected ~= btn then
+			currentSelected.BackgroundTransparency = 1
+			currentSelected.BackgroundColor3 = Color3.fromRGB(255,255,255)
+		end
+
+		currentSelected = btn
+		btn.BackgroundTransparency = 0.5
+		btn.BackgroundColor3 = Color3.fromRGB(0,95,255)
+
+		------------------------------------------------
+		-- folder / zip / 7z
+		------------------------------------------------
+
+		if isFolderItem or isPseudoFolder then
+			openedFolders[filePath] = not openedFolders[filePath]
+			refreshFileList()
+			return
+		end
+
+		------------------------------------------------
+		-- preview text
+		------------------------------------------------
+
+		if filePath and isfile and isfile(filePath) then
+
+			local ext = getExtension(ObjectName)
+			if ext and ALLOWED[ext] then
+
+				local content = readfile(filePath)
+				if not content then return end
+
+				FDtxtview.Text = content
+
+				-- line number
+				local count = 1
+				for _ in content:gmatch("\n") do
+					count += 1
+				end
+
+				local lines = ""
+				for i = 1, count do
+					lines ..= i.."\n"
+				end
+
+				LineNumViwer.Text = lines
+
+				task.defer(function()
+					local y = FDtxtview.TextBounds.Y
+					FDScroll.CanvasSize = UDim2.new(100,0,0, y + 20)
+				end)
+
+			end
+		end
+
+	end)
+
+	return btn
+end
+
+------------------------------------------------
+-- REFRESH
+------------------------------------------------
+
+function refreshFileList()
+
+	-- clear
+	for _, v in ipairs(filelist:GetChildren()) do
+		if v.Name == "Object" then
+			v:Destroy()
+		end
+	end
+
+	local function scan(path, depth)
+
+		local ok, items = pcall(function()
+			return listfiles(path)
+		end)
+
+		if not ok or not items then return end
+
+		for _, p in ipairs(items) do
+
+			local name = p:match("[^/]+$")
+			local isFolder = isfolder and isfolder(p)
+
+			local match = matchSearch(name)
+			local childMatch = isFolder and hasMatch(p)
+
+			------------------------------------------------
+			-- SEARCH MODE
+			------------------------------------------------
+			if currentSearch ~= "" then
+
+				if not match and not childMatch then
+					continue
+				end
+
+				if isFolder and childMatch then
+					openedFolders[p] = true
+				end
+
+			end
+
+			local icon, canOpen = resolveUI(name, isFolder)
+			fdlists(1, canOpen, icon, name, depth - 0, p)
+
+			if isFolder and openedFolders[p] then
+				scan(p, depth - 30)
+			end
+
+		end
+	end
+
+	scan(PATH, 0)
+
+	-- canvas fix
+	task.defer(function()
+		local layout = filelist:FindFirstChildOfClass("UIListLayout")
+		if layout then
+			filelist.CanvasSize = UDim2.new(100,0,0, layout.AbsoluteContentSize.Y + 10)
+		end
+	end)
+
+end
+
+------------------------------------------------
+-- BTN BAR (รองรับ callback)
+------------------------------------------------
+
+local function btnbar(name, imageID, ifLine, workin, callback)
+
+	local bbar = Instance.new("ImageButton")
+	bbar.Name = tostring(name)
+	bbar.Size = UDim2.new(1,0,1,0)
+	bbar.BackgroundTransparency = 1
+	bbar.Image = "rbxassetid://"..tostring(imageID)
+	bbar.Parent = isbar
+
+	Corner(0.1,0,bbar)
+	uia(bbar, 1)
+
+	if ifLine then
+		local line = Instance.new("Frame")
+		line.Size = UDim2.new(0,3,1,0)
+		line.BackgroundColor3 = Color3.fromRGB(170,170,170)
+		line.Parent = isbar
+	end
+
+	if callback then
+		bbar.MouseButton1Click:Connect(callback)
+	end
+
+	return bbar
+end
+
+------------------------------------------------
+-- TEXTBOX SEARCH
+------------------------------------------------
+
+sebar:GetPropertyChangedSignal("Text"):Connect(function()
+
+	currentSearch = string.lower(sebar.Text or "")
+
+	if currentSearch == "" then
+		resetFolders()
+	end
+
+	refreshFileList()
+
+end)
+
+------------------------------------------------
+-- BUTTON SEARCH (fix error)
+------------------------------------------------
+
+local searchBtn = btnbar("Search", 133955276215666, true, nil, function()
+	currentSearch = string.lower(sebar.Text or "")
+	refreshFileList()
+end)
+
+------------------------------------------------------------
+
+if not (isfolder and isfolder(PATH)) then return end
+refreshFileList()
+
+Frame.Folder.Inside.soon.Visible = false
+Frame.Folder.Inside.soon.ZIndex = 2
+------------------------------------------------------------
+local Inside = Instance.new("CanvasGroup")
+Inside.Name = "Inside"
+Inside.Position = UDim2.new(0.15,0,1.2,0)
+Inside.Size = UDim2.new(0.7,0,0.15,0)
+Inside.BackgroundColor3 = Color3.fromRGB(18,18,21)
+Inside.Transparency = 0.1
+Inside.Parent = Bg
+Corner(0.2,0,Inside)
+Stroke(Inside, ASMBorder, 255,255,255, LJMRound, 2, 0)
+
+local str1 = Inside.UIStroke
+local gra1 = Gradient(str1, 45, 0, 0,
+    Color3.fromRGB(255,255,255),
+    Color3.fromRGB(0,255,255)
+)
+
+task.spawn(function()
+    while true do        
+      task.wait(0.001)
+        gra1.Rotation += 3
+        if gra1.Rotation == 360 then
+           gra1.Rotation = 0
+        end
+
+    end
+end)
+
+local Bar = Instance.new("Frame")
+Bar.Name = "Holder"
+Bar.Position = UDim2.new(0.02,0,0.25,0)
+Bar.Size = UDim2.new(0.96,0,0.5,0)
+Bar.BackgroundTransparency = 1
+Bar.Parent = Inside
+ListLayout(Bar, 0, 10, HLeft, VCenter, SLayout, FillH)
+
+local oc = oc
+local inside = Inside
+local Bg = Bg
+local Bghr = Bghr
+
+local bounceInfo = TweenInfo.new(
+    0.4,
+    Enum.EasingStyle.Quad,
+    Enum.EasingDirection.Out
+)
+
+local shrinkInfo = TweenInfo.new(
+    0.2,
+    Enum.EasingStyle.Quad,
+    Enum.EasingDirection.Out
+)
+
+local bgInfo = TweenInfo.new(
+    0.5,
+    Enum.EasingStyle.Quad,
+    Enum.EasingDirection.Out
+)
+
+oc.MouseButton1Click:Connect(function()
+
+    -- Tween ย่อ oc
+    local shrinkTween = TweenService:Create(oc, shrinkInfo, {
+        Size = UDim2.new(0,0,0,0)
+    })
+    shrinkTween:Play()
+
+    -- ซ่อนหลังย่อเสร็จ
+    shrinkTween.Completed:Connect(function()
+        oc.Visible = false
+    end)
+
+    -- เด้ง Inside
+    TweenService:Create(inside, bounceInfo, {
+        Position = UDim2.new(0.15,0,0.8,0)
+    }):Play()
+
+    -- ทำให้พื้นหลังมืดลง
+    TweenService:Create(Bg, bgInfo, {
+        BackgroundTransparency = 0.3
+    }):Play()
+
+    -- เลื่อน Bghr ขึ้นมา
+    TweenService:Create(Bghr, bgInfo, {
+        Position = UDim2.new(0,0,0.02,0)
+    }):Play()
+
+end)
+
+------------------------------------------------------------
+local ActiveColor = Color3.fromRGB(140, 0, 255)
+local InactiveColor = Color3.fromRGB(0, 0, 0)
+
+local Buttons = {}
+
+local btnTween = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local frameTween = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local insideTween = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local function activateTab(name)
+    for btnName, btn in pairs(Buttons) do
+        
+        local frame = Frame[btnName]
+        if not frame then
+            --[[ Frame not found ]]
+            continue
+        end
+
+        local inside = frame:FindFirstChild("Inside")
+
+        if btnName == name then
+            -- ปุ่มที่ถูกกด
+            TweenService:Create(btn, btnTween, {
+                BackgroundColor3 = ActiveColor
+            }):Play()
+
+            TweenService:Create(
+                btn.UIAspectRatioConstraint,
+                btnTween,
+                {AspectRatio = 2}
+            ):Play()
+
+            TweenService:Create(frame, frameTween, {
+                Position = UDim2.new(0.1,0,0.1,0)
+            }):Play()
+
+            if inside then
+                TweenService:Create(inside, insideTween, {
+                    Position = UDim2.new(0.025,0,0.15,0)
+                }):Play()
+            end
+        else
+            -- ปุ่มอื่น
+            TweenService:Create(btn, btnTween, {
+                BackgroundColor3 = InactiveColor
+            }):Play()
+
+            TweenService:Create(
+                btn.UIAspectRatioConstraint,
+                btnTween,
+                {AspectRatio = 1}
+            ):Play()
+
+            TweenService:Create(frame, frameTween, {
+                Position = UDim2.new(0.1,0,-1,0)
+            }):Play()
+
+            if inside then
+                TweenService:Create(inside, insideTween, {
+                    Position = UDim2.new(0.025,0,2,0)
+                }):Play()
+            end
+        end
+    end
+end
+
+
+local function Btn(name, imageID, workin, callback, state)
+  local imabtn = Instance.new("ImageButton")
+  imabtn.Name = tostring(name)
+  imabtn.Size = UDim2.new(0,0,1,0)
+  imabtn.ScaleType = Enum.ScaleType.Fit
+
+  local aspectConstraint = Instance.new("UIAspectRatioConstraint")
+  aspectConstraint.AspectRatio = 1
+  aspectConstraint.AspectType = Enum.AspectType.ScaleWithParentSize
+  aspectConstraint.DominantAxis = Enum.DominantAxis.Height
+  aspectConstraint.Parent = imabtn
+
+  imabtn.BackgroundColor3 = InactiveColor
+  imabtn.Image = "rbxassetid://" .. tostring(imageID)
+  imabtn.Parent = Bar
+
+  Corner(0.15, 0, imabtn)
+  Stroke(imabtn, ASMBorder, 255,255,255, LJMRound, 1,0)
+  Gradient(imabtn, 45,0,0,
+    Color3.fromRGB(85,255,255),
+    Color3.fromRGB(255,255,255)
+  )
+
+  -- เก็บปุ่ม
+  Buttons[name] = imabtn
+
+  if workin then
+    task.spawn(function()
+      workin(imabtn)
+    end)
+  end
+
+  local toggled = false
+
+  imabtn.MouseButton1Click:Connect(function()
+    if state == "toggle" then
+      toggled = not toggled
+      if callback then
+        callback(toggled, imabtn)
+      end
+    else
+      -- เปิดแท็บตามชื่อปุ่ม
+      activateTab(name)
+
+      if callback then
+        callback(imabtn)
+      end
+    end
+  end)
+
+  return imabtn
+end
+------------------------------------------------------------
+
+local Close = Btn(
+    "Close",
+    76063966669126,
+    nil,
+    function()
+
+        oc.Visible = true
+
+        -- Tween oc กลับขนาดปกติ
+        TweenService:Create(oc,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Size = UDim2.new(0.04,0,0.08,0)}
+        ):Play()
+
+        -- Tween Inside ลงล่าง
+        TweenService:Create(Inside,
+            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Position = UDim2.new(0.15,0,1.2,0)}
+        ):Play()
+
+        -- ทำให้พื้นหลังโปร่งใสกลับปกติ
+        TweenService:Create(Bg,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundTransparency = 1}
+        ):Play()
+
+        -- เลื่อน Bghr ลง
+        TweenService:Create(Bghr,
+            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Position = UDim2.new(0,0,-1,0)}
+        ):Play()
+    end
+)
+
+Close.BackgroundColor3 = Color3.fromRGB(170,0,0)
+
+
+home = Btn("Home", 70503788933260)
+edit = Btn("Edit", 89040201197978)
+autoexe = Btn("AutoExe", 138873910046129)
+console = Btn("Console", 76584386272665)
+expinfo = Btn("ExpInfo", 98945717252202)
+folder = Btn("Folder", 86157935898545)
+bookmark = Btn("Bookmark", 71272710123832)
+search = Btn("Search", 133955276215666)
+music = Btn("Music", 120343700432506)
+settings = Btn("Settings", 139502039855639)
+
+-- loadstring
+local ok,err = pcall(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/Executor/ExperienceSettings%20Executor%202.lua"))()
+end)
+
+if ok then
+	noti(3,"<b>Welcome!</b> Successful loaded!",color.green)
+else
+	noti(5,"Script error: "..tostring(err),color.red)
+end
+
+
+
+noti(5, "<b>Verison: </b>" .. Version, color.nor)
