@@ -1,0 +1,530 @@
+-- // ZIAA HUB — v2.0
+-- // Script Hub by Ziaa
+
+-- ============================================================
+-- //                    SPLASH SCREEN
+-- ============================================================
+
+local LOGO_ID  = "rbxassetid://73396715275394"
+
+local TweenService = game:GetService("TweenService")
+
+local function tw(obj, t, props, style, dir)
+    style = style or Enum.EasingStyle.Sine
+    dir   = dir   or Enum.EasingDirection.Out
+    TweenService:Create(obj, TweenInfo.new(t, style, dir), props):Play()
+end
+
+task.spawn(function()
+    local SplashGui = Instance.new("ScreenGui")
+    SplashGui.Name           = "ZiaaSplash"
+    SplashGui.ResetOnSpawn   = false
+    SplashGui.IgnoreGuiInset = true
+    SplashGui.DisplayOrder   = 1000000001
+    SplashGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    SplashGui.Parent         = (gethui and gethui()) or game:GetService("CoreGui")
+
+    -- Background
+    local BG = Instance.new("Frame")
+    BG.Size                   = UDim2.new(1, 0, 1, 0)
+    BG.BackgroundColor3       = Color3.fromRGB(6, 5, 14)
+    BG.BackgroundTransparency = 1
+    BG.ZIndex                 = 2
+    BG.Parent                 = SplashGui
+
+    local bg_grad = Instance.new("UIGradient")
+    bg_grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(14, 8, 32)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(8, 6, 20)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(4, 4, 10))
+    })
+    bg_grad.Rotation = 145
+    bg_grad.Parent   = BG
+
+    -- Decorative lines
+    local lineTop = Instance.new("Frame")
+    lineTop.Size             = UDim2.new(0, 0, 0, 1)
+    lineTop.Position         = UDim2.new(0.5, 0, 0.33, 0)
+    lineTop.BackgroundColor3 = Color3.fromRGB(120, 80, 255)
+    lineTop.ZIndex           = 3
+    lineTop.Parent           = BG
+    Instance.new("UICorner", lineTop).CornerRadius = UDim.new(1, 0)
+
+    local lineBot = Instance.new("Frame")
+    lineBot.Size             = UDim2.new(0, 0, 0, 1)
+    lineBot.Position         = UDim2.new(0.5, 0, 0.67, 0)
+    lineBot.BackgroundColor3 = Color3.fromRGB(80, 50, 160)
+    lineBot.ZIndex           = 3
+    lineBot.Parent           = BG
+    Instance.new("UICorner", lineBot).CornerRadius = UDim.new(1, 0)
+
+    -- Logo box
+    local LogoBox = Instance.new("Frame")
+    LogoBox.Size                   = UDim2.new(0, 80, 0, 80)
+    LogoBox.Position               = UDim2.new(0.5, -40, 0.5, -60)
+    LogoBox.BackgroundColor3       = Color3.fromRGB(18, 12, 40)
+    LogoBox.BackgroundTransparency = 1
+    LogoBox.ZIndex                 = 3
+    LogoBox.Parent                 = BG
+    Instance.new("UICorner", LogoBox).CornerRadius = UDim.new(0, 20)
+
+    local LogoStroke = Instance.new("UIStroke")
+    LogoStroke.Color        = Color3.fromRGB(120, 80, 255)
+    LogoStroke.Thickness    = 1.5
+    LogoStroke.Transparency = 1
+    LogoStroke.Parent       = LogoBox
+
+    local LogoImg = Instance.new("ImageLabel")
+    LogoImg.Size                   = UDim2.new(0.76, 0, 0.76, 0)
+    LogoImg.Position               = UDim2.new(0.12, 0, 0.12, 0)
+    LogoImg.Image                  = LOGO_ID
+    LogoImg.ScaleType              = Enum.ScaleType.Fit
+    LogoImg.BackgroundTransparency = 1
+    LogoImg.ImageTransparency      = 1
+    LogoImg.ZIndex                 = 4
+    LogoImg.Parent                 = LogoBox
+
+    -- Text labels
+    local function makeLabel(text, size, color, yOff, textSize, font)
+        local l = Instance.new("TextLabel")
+        l.Size                   = UDim2.new(0, 500, 0, size)
+        l.Position               = UDim2.new(0.5, -250, 0.5, yOff)
+        l.Text                   = text
+        l.TextColor3             = color
+        l.TextSize               = textSize
+        l.Font                   = font or Enum.Font.GothamBold
+        l.BackgroundTransparency = 1
+        l.TextTransparency       = 1
+        l.ZIndex                 = 3
+        l.Parent                 = BG
+        return l
+    end
+
+    local WelcomeL = makeLabel("WELCOME TO",          22, Color3.fromRGB(160, 140, 200),  42, 13, Enum.Font.GothamBold)
+    local HubL     = makeLabel("ZIAA HUB",            60, Color3.fromRGB(255, 255, 255),  64, 52, Enum.Font.GothamBlack)
+    local SubL     = makeLabel("Made by Roto17 on discord", 20, Color3.fromRGB(90, 80, 140),   128, 12, Enum.Font.GothamMedium)
+
+    -- === ANIMATE IN ===
+    tw(BG, 0.5, { BackgroundTransparency = 0 }, Enum.EasingStyle.Sine)
+    task.wait(0.2)
+
+    tw(LogoBox,    0.45, { BackgroundTransparency = 0 }, Enum.EasingStyle.Sine)
+    tw(LogoStroke, 0.45, { Transparency = 0 },           Enum.EasingStyle.Sine)
+    tw(LogoImg,    0.45, { ImageTransparency = 0 },      Enum.EasingStyle.Sine)
+    task.wait(0.18)
+
+    tw(lineTop, 0.55, {
+        Size     = UDim2.new(0, 360, 0, 1),
+        Position = UDim2.new(0.5, -180, 0.33, 0)
+    }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    tw(lineBot, 0.55, {
+        Size     = UDim2.new(0, 240, 0, 1),
+        Position = UDim2.new(0.5, -120, 0.67, 0)
+    }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    task.wait(0.10)
+
+    tw(WelcomeL, 0.30, { TextTransparency = 0 }, Enum.EasingStyle.Sine) task.wait(0.06)
+    tw(HubL,     0.38, { TextTransparency = 0 }, Enum.EasingStyle.Sine) task.wait(0.06)
+    tw(SubL,     0.30, { TextTransparency = 0 }, Enum.EasingStyle.Sine)
+
+    task.wait(1.8)
+
+    -- === ANIMATE OUT ===
+    tw(WelcomeL, 0.20, { TextTransparency = 1 }, Enum.EasingStyle.Sine)
+    tw(HubL,     0.20, { TextTransparency = 1 }, Enum.EasingStyle.Sine)
+    tw(SubL,     0.20, { TextTransparency = 1 }, Enum.EasingStyle.Sine)
+
+    tw(lineTop, 0.26, {
+        Size     = UDim2.new(0, 0, 0, 1),
+        Position = UDim2.new(0.5, 0, 0.33, 0)
+    }, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    tw(lineBot, 0.26, {
+        Size     = UDim2.new(0, 0, 0, 1),
+        Position = UDim2.new(0.5, 0, 0.67, 0)
+    }, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    task.wait(0.08)
+
+    tw(LogoBox,    0.26, { BackgroundTransparency = 1 }, Enum.EasingStyle.Sine)
+    tw(LogoStroke, 0.26, { Transparency = 1 },           Enum.EasingStyle.Sine)
+    tw(LogoImg,    0.26, { ImageTransparency = 1 },      Enum.EasingStyle.Sine)
+    task.wait(0.10)
+
+    tw(BG, 0.36, { BackgroundTransparency = 1 }, Enum.EasingStyle.Sine)
+    task.wait(0.40)
+
+    SplashGui:Destroy()
+end)
+
+-- Wait for splash to finish before loading
+task.wait(3.2)
+
+-- ============================================================
+-- //                  ZIAA HUB — MAIN SCRIPT
+-- ============================================================
+
+-- Reset
+getgenv().ES = nil
+
+-- Load Setup
+loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/loadstring/ExperienceSettings-SetUp.lua"))()
+
+repeat task.wait() until getgenv().__ES_READY or getgenv().__ES_BANNED
+
+if getgenv().__ES_BANNED then
+    warn("You're banned from ExperienceSettings.")
+    return
+end
+
+local ES = getgenv().ES
+
+-- ===== ERROR SYSTEM =====
+local function catch(err)
+    ES.error     = true
+    ES.lastError = tostring(err)
+    warn("[ ES ERROR ]:", err)
+end
+
+local function safe(f)
+    local ok, err = pcall(f)
+    if not ok then catch(err) end
+end
+
+-- ===== SCAN SYSTEM =====
+local visited = {}
+local queue   = {}
+
+local function extractURLs(src)
+    local urls = {}
+    for url in string.gmatch(src, 'HttpGet%(%s*"(.-)"%s*%)') do
+        table.insert(urls, url)
+    end
+    return urls
+end
+
+local function scan(url)
+    if visited[url] then return end
+    visited[url] = true
+
+    local ok, src = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not ok then
+        return catch("HttpGet failed: " .. tostring(src))
+    end
+    if not src or src == "" then
+        return catch("Empty script: " .. url)
+    end
+
+    local f, err = loadstring(src)
+    if not f then
+        return catch("Compile error: " .. err .. " | " .. url)
+    end
+
+    for _, u in ipairs(extractURLs(src)) do
+        table.insert(queue, u)
+    end
+
+    local count = 0
+    for _ in pairs(visited) do count += 1 end
+    ES.progress = math.clamp(count * 15, 0, ES.max)
+end
+
+-- ===== MAIN LOADER =====
+local function main()
+    table.insert(queue, "https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/loadstring/Loader.lua")
+
+    while #queue > 0 do
+        if ES.error then break end
+        local url = table.remove(queue, 1)
+        safe(function() scan(url) end)
+    end
+end
+
+safe(main)
+
+task.delay(0.5, function()
+    if not ES.error then
+        ES.progress = ES.max
+        ES.done     = true
+    end
+end)
+
+-- Loader
+loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/ExperienceSettings-(loadstring)/Loader.lua"))()
+
+local Players    = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local CoreGui    = game:GetService("CoreGui")
+
+local player    = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp       = character:WaitForChild("HumanoidRootPart")
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, true)
+
+-- ===== MONITOR & AUTO-RUN =====
+local MONITOR_URL = "https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/main/loadstring.lua"
+
+local function getHealthBar()
+    local ok, top = pcall(function()
+        return CoreGui:FindFirstChild("TopBarApp") and CoreGui.TopBarApp:FindFirstChild("TopBarApp")
+    end)
+    if not ok or not top then return nil end
+    local unibar = top:FindFirstChild("UnibarLeftFrame")
+    if not unibar then return nil end
+    return unibar:FindFirstChild("HealthBar")
+end
+
+local function removeLoadBackground()
+    local ok, menu = pcall(function()
+        return CoreGui.TopBarApp.TopBarApp.UnibarLeftFrame.HealthBar.ExperienceSettings.Menu
+    end)
+    if ok and menu then
+        local bg = menu:FindFirstChild("Load_Background")
+        if bg then
+            pcall(function() bg:Destroy() end)
+            warn("[Ziaa Hub] Removed Load_Background before re-executing.")
+        end
+    end
+end
+
+local reloading = false
+_G.HealthBarExecutedOnce = _G.HealthBarExecutedOnce or false
+
+local function tryReload()
+    if reloading then return end
+    reloading = true
+
+    if _G.HealthBarExecutedOnce then
+        removeLoadBackground()
+    else
+        warn("[Ziaa Hub] First-time execute.")
+    end
+
+    local ok, src = pcall(function() return game:HttpGet(MONITOR_URL) end)
+    if not ok then
+        warn("[Ziaa Hub] HttpGet failed:", src)
+        reloading = false
+        return
+    end
+
+    local f, err = loadstring(src)
+    if not f then
+        warn("[Ziaa Hub] Compile failed:", err)
+        reloading = false
+        return
+    end
+
+    local ok2, res = pcall(f)
+    if not ok2 then
+        warn("[Ziaa Hub] Runtime error:", res)
+    else
+        print("[Ziaa Hub] Loadstring executed successfully.")
+    end
+
+    _G.HealthBarExecutedOnce = true
+    reloading = false
+end
+
+-- Monitor loop
+task.spawn(function()
+    while true do
+        task.wait(1)
+        local hb = getHealthBar()
+        if hb then
+            local exp = hb:FindFirstChild("ExperienceSettings")
+            if not exp then tryReload() end
+        end
+    end
+end)
+
+-- ===== LOCATION WAIT =====
+local expsting = CoreGui:WaitForChild("TopBarApp")
+    :WaitForChild("TopBarApp")
+    :WaitForChild("UnibarLeftFrame")
+    :WaitForChild("HealthBar")
+    :WaitForChild("ExperienceSettings")
+
+-- Wait for loader to be ready
+local loader
+repeat
+    loader = expsting:FindFirstChild("Menu")
+        and expsting.Menu:FindFirstChild("Load_Background")
+        and expsting.Menu.Load_Background:FindFirstChild("Skip")
+        and expsting.Menu.Load_Background.Skip:FindFirstChild("Loader")
+    task.wait(0.05)
+until loader and loader.Size == UDim2.new(1, 0, 1, 0)
+
+expsting.Parent = CoreGui
+
+-- ===== AUTO-DESTROY Load_Background =====
+task.wait(3)
+
+task.spawn(function()
+    while task.wait(0.05) do
+        local path = CoreGui:FindFirstChild("TopBarApp", 10)
+        if path then path = path:FindFirstChild("TopBarApp", 10) end
+        if path then path = path:FindFirstChild("UnibarLeftFrame", 10) end
+        if path then path = path:FindFirstChild("HealthBar", 10) end
+        if path then path = path:FindFirstChild("ExperienceSettings", 10) end
+        if path then path = path:FindFirstChild("Menu", 10) end
+        if path then
+            local lb = path:FindFirstChild("Load_Background", 10)
+            if lb then lb:Destroy() end
+        end
+    end
+end)
+
+-- ===== AUTO-DESTROY DUPLICATE CHILDREN =====
+task.spawn(function()
+    while task.wait(0.05) do
+        local path = CoreGui:FindFirstChild("TopBarApp", 10)
+        if path then path = path:FindFirstChild("TopBarApp", 10) end
+        if path then path = path:FindFirstChild("UnibarLeftFrame", 10) end
+        if path then path = path:FindFirstChild("HealthBar", 10) end
+        if path then path = path:FindFirstChild("ExperienceSettings", 10) end
+        if not path then continue end
+
+        local nameCount = {}
+        for _, obj in ipairs(path:GetChildren()) do
+            local n = obj.Name
+            nameCount[n] = nameCount[n] or {}
+            table.insert(nameCount[n], obj)
+        end
+        for _, list in pairs(nameCount) do
+            if #list > 1 then
+                for i = 2, #list do list[i]:Destroy() end
+            end
+        end
+    end
+end)
+
+-- Function_Two
+loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/ExperienceSettings-(loadstring)/Function_Two.lua"))()
+
+-- BouncyAndHighlightImageButton
+loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/loadstring/BouncyAndHighlightImageButton.lua"))()
+print("[ BouncyAndHighlightImageButton ] Successfully loaded.")
+
+local sata = CoreGui:WaitForChild("TopBarApp", 10)
+    :WaitForChild("TopBarApp", 10)
+    :WaitForChild("UnibarLeftFrame", 10)
+    :WaitForChild("HealthBar", 10)
+    :WaitForChild("ExperienceSettings", 10)
+    :WaitForChild("Menu", 10)
+sata:Destroy()
+
+-- AI-OpenSource
+loadstring(game:HttpGet("https://gist.githubusercontent.com/idkbro-afk/1ee0532b66890d4d53bb3f31552ac95d/raw/6912aed72552df0e6d9c8ff114ed6b779d9744db/gistfile1.txt"))()
+print("[ AI-OpenSource ] Successfully loaded.")
+
+-- Search
+loadstring(game:HttpGet("https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/ExperienceSettings-(loadstring)/Search.lua"))()
+print("[ Search ] Successfully loaded.")
+
+-- ===== TOPBAR ICON OVERRIDE =====
+task.spawn(function()
+    while task.wait(0.2) do
+        local menu = CoreGui:FindFirstChild("ExperienceSettings")
+        if not menu then continue end
+        local Menu1  = menu:FindFirstChild("Menu")     if not Menu1  then continue end
+        local topBar = Menu1:FindFirstChild("TopBar")  if not topBar then continue end
+        local holder = topBar:FindFirstChild("Holder") if not holder then continue end
+        local OC     = holder:FindFirstChild("a1_Open/Close") if not OC then continue end
+
+        OC.BackgroundColor3 = Color3.fromRGB(255, 125, 125)
+
+        local stroke = OC:FindFirstChildOfClass("UIStroke")
+        if stroke then stroke.Color = Color3.fromRGB(255, 0, 0) end
+
+        if OC.Image == "rbxassetid://112166445155251" then
+            OC.Image = "rbxassetid://133900380566355"
+        elseif OC.Image == "rbxassetid://103716616779537" then
+            OC.Image = "rbxassetid://126566279053159"
+        end
+    end
+end)
+
+print("[ TopBar ] Logo changed successfully.")
+print("------------------------------------------------------------")
+
+-- ===== NOTIFICATIONS =====
+task.spawn(function()
+    StarterGui:SetCore("SendNotification", {
+        Title    = "Ziaa Hub loaded!";
+        Text     = "Thanks for using Ziaa Hub.";
+        Duration = 5;
+        Icon     = "rbxassetid://73396715275394";
+    })
+    task.wait(5)
+    StarterGui:SetCore("SendNotification", {
+        Title    = "Beta Notice";
+        Text     = "Ziaa Hub is still in beta.";
+        Duration = 5;
+        Icon     = "rbxassetid://115317256375260";
+    })
+end)
+
+task.wait(1)
+
+-- ===== BAN SYSTEM =====
+local plr = Players.LocalPlayer
+
+local BanMenu     = CoreGui:WaitForChild("ExperienceSettings", 10) and CoreGui.ExperienceSettings:WaitForChild("Menu", 10)
+local BanValueGui = CoreGui:WaitForChild("TopBarApp", 10)
+    and CoreGui.TopBarApp:WaitForChild("TopBarApp", 10)
+    :WaitForChild("UnibarLeftFrame", 10)
+    :WaitForChild("HealthBar", 10)
+    :WaitForChild("ValueFolder", 10)
+    :WaitForChild("ValueGui", 10)
+
+local BannedList = {
+    Usernames = {
+        -- ["example_user"] = true,
+    },
+    UserIds = {
+        -- [123456789] = true,
+    }
+}
+
+local function IsBanned(player)
+    if not player then return false end
+    return BannedList.Usernames[player.Name] == true
+        or BannedList.UserIds[player.UserId] == true
+end
+
+if IsBanned(plr) then
+    task.spawn(function()
+        while task.wait(0.1) do
+            if BanMenu     then BanMenu.Enabled     = false end
+            if BanValueGui then BanValueGui.Enabled = false end
+        end
+    end)
+    StarterGui:SetCore("SendNotification", {
+        Title    = "BANNED",
+        Text     = "You are banned from Ziaa Hub.",
+        Duration = 15,
+        Icon     = "rbxassetid://117179620345399",
+    })
+end
+
+-- ===== PROFILE STATUS POSITION =====
+local profileStatus =
+    CoreGui:WaitForChild("TopBarApp")
+        :WaitForChild("TopBarApp")
+        :WaitForChild("UnibarLeftFrame")
+        :WaitForChild("HealthBar")
+        :WaitForChild("ExperienceSettings")
+        :WaitForChild("Menu")
+        :WaitForChild("ProfileStatus")
+
+while not profileStatus.Parent do
+    profileStatus.AncestryChanged:Wait()
+end
+
+profileStatus.Position = UDim2.new(
+    profileStatus.Position.X.Scale,
+    profileStatus.Position.X.Offset,
+    1,
+    0
+)
