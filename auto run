@@ -1904,7 +1904,7 @@ local ctb12 = createImageButton("b3_ExperienceSettings_Executor", 64, 255, 74, 0
 if ctb12 then
 	ctb12.MouseButton1Click:Connect(function()
 			pcall(function()
-loadstring(game:HttpGet("https://bit.ly/4tJ4Jbn"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idkbro-afk/ideal-engine/refs/heads/main/executor"))()
 		end)
 	end)
 end
