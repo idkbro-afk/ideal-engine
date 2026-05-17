@@ -232,7 +232,7 @@ end
 
 -- ===== MAIN LOADER =====
 local function main()
-    table.insert(queue, "https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/loadstring/Loader.lua")
+    table.insert(queue, "https://raw.githubusercontent.com/idkbro-afk/ideal-engine/refs/heads/main/loadstring")
 
     while #queue > 0 do
         if ES.error then break end
