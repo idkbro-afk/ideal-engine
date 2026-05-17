@@ -341,7 +341,7 @@ imag.Name = "a1_Icon"
 imag.Active = false
 imag.Size = UDim2.new(0,100,0,100)
 imag.BackgroundTransparency = 0.3
-imag.Image = "rbxassetid://89394692512627"
+imag.Image = "rbxassetid://73396715275394"
 imag.Parent = in1
 Corner(0, 8, imag)
 
@@ -382,7 +382,7 @@ txt3.TextXAlignment = Enum.TextXAlignment.Left
 txt3.Size = UDim2.new(1,0,0,15)
 txt3.Position = UDim2.new(0,0,0,70)
 txt3.BackgroundTransparency = 1
-txt3.Text = "[ User on ScriptBlox/HaxHell ]"
+txt3.Text = "[ User on rscripts.net ]"
 txt3.TextColor3 = Color3.fromRGB(255,255,255)
 txt3.TextScaled =  true
 txt3.Parent = iN2
